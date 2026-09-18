@@ -1,0 +1,13 @@
+[config]
+
+[templates.hyprland]
+input_path  = "~/.config/matugen/templates/hyprland-colors.lua"
+output_path = "~/.config/hypr/lua/colors.lua"
+
+[templates.quickshell]
+input_path  = "~/.config/matugen/templates/quickshell-colors.json"
+output_path = "~/.config/quickshell/colors.json"
+
+[templates.ghostty]
+input_path  = "~/.config/matugen/templates/ghostty-colors.conf"
+output_path = "~/.config/ghostty/theme"
