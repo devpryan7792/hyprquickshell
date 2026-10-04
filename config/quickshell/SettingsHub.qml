@@ -579,6 +579,7 @@ PanelWindow {
                         color: Theme.silver
                     }
 
+                    // 4 Surface Tone Pills (Obsidian, AMOLED, Blood Red, Steel)
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 6
@@ -588,8 +589,7 @@ PanelWindow {
                                 { id: "obsidian", name: "Obsidian", icon: "󰌶" },
                                 { id: "amoled", name: "AMOLED 0%", icon: "🖤" },
                                 { id: "blood", name: "Blood Red", icon: "🩸" },
-                                { id: "steel", name: "Steel", icon: "⚔️" },
-                                { id: "material", name: "Material", icon: "󰏘" }
+                                { id: "steel", name: "Steel", icon: "⚔️" }
                             ]
 
                             Rectangle {
@@ -603,7 +603,7 @@ PanelWindow {
 
                                 RowLayout {
                                     anchors.centerIn: parent
-                                    spacing: 4
+                                    spacing: 5
                                     Text {
                                         text: modelData.icon
                                         font.family: "JetBrainsMono Nerd Font"
@@ -614,7 +614,7 @@ PanelWindow {
                                         text: modelData.name
                                         font.family: "JetBrainsMono Nerd Font"
                                         font.bold: true
-                                        font.pixelSize: 9
+                                        font.pixelSize: 10
                                         color: parent.parent.isActive ? Theme.accent : Theme.fg0
                                     }
                                 }
@@ -629,6 +629,84 @@ PanelWindow {
                                         settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface " + modelData.id)
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    // Bigger, prominent Material Tint banner button below
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 44
+                        radius: 8
+                        readonly property bool isActive: settingsWindow.activeSurface === "material"
+                        color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (matMouse.containsMouse ? Theme.bg2 : Theme.bg1)
+                        border.color: isActive ? Theme.accent : (matMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2)
+                        border.width: isActive ? 1.5 : 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
+                            spacing: 10
+
+                            Rectangle {
+                                width: 26
+                                height: 26
+                                radius: 6
+                                color: parent.parent.isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : Theme.bg2
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰏘"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 13
+                                    color: Theme.accent
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 1
+                                Text {
+                                    text: "Material Tint"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.bold: true
+                                    font.pixelSize: 11
+                                    color: parent.parent.parent.isActive ? Theme.accent : Theme.fg0
+                                }
+                                Text {
+                                    text: "Dynamic adaptive glass tone extracted from current wallpaper"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 9
+                                    color: Theme.silver
+                                }
+                            }
+
+                            Rectangle {
+                                visible: parent.parent.isActive
+                                height: 18
+                                radius: 9
+                                width: activeMatText.implicitWidth + 12
+                                color: Theme.accent
+                                Text {
+                                    id: activeMatText
+                                    anchors.centerIn: parent
+                                    text: "ACTIVE"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 8
+                                    font.bold: true
+                                    color: Theme.bg0
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: matMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                settingsWindow.activeSurface = "material"
+                                settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface material")
                             }
                         }
                     }
