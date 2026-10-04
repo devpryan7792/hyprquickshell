@@ -15,6 +15,7 @@ hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("which brave >/dev/null 2>&1 
 -- ── Quickshell Integrations (Replaced Rofi & Waybar) ──────────────────
 -- App Launcher (Spotlight)
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("quickshell ipc call launcher toggle"))
+hl.bind(mainMod .. " + D",     hl.dsp.exec_cmd("quickshell ipc call launcher toggle"))
 
 -- Clipboard History
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("quickshell ipc call launcher clip"))

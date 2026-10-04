@@ -11,5 +11,6 @@ cursor-style = block
 cursor-style-blink = true
 cursor-click-to-move = true
 shell-integration = detect
-# command = /usr/bin/zsh
 linux-cgroup = never
+gtk-single-instance = false
+command = direct:/usr/bin/zsh

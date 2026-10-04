@@ -10,9 +10,9 @@ if [ "$current_special" = "special:scratchpad" ]; then
 fi
 
 # 2. Currently hidden: check if client exists
-if ! hyprctl clients -j 2>/dev/null | jq -e '.[] | select(.initialTitle == "Scratchpad")' >/dev/null 2>&1; then
-    # Cold start: launch detached in user session
-    systemd-run --user ghostty --gtk-single-instance=false --title="Scratchpad" >/dev/null 2>&1
+if ! hyprctl clients -j 2>/dev/null | jq -e '.[] | select(.initialTitle == "Scratchpad" or .title == "Scratchpad")' >/dev/null 2>&1; then
+    # Cold start: launch detached with setsid
+    setsid ghostty --gtk-single-instance=false --title="Scratchpad" </dev/null >/dev/null 2>&1 &
 
     # Wait until Hyprland registers the window
     for _ in {1..30}; do
