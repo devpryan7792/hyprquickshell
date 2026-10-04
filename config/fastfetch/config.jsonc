@@ -1,114 +1,110 @@
 {
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
     "logo": {
-        "type": "small",
+        "source": "arch_small",
         "color": {
             "1": "magenta",
             "2": "cyan"
         },
         "padding": {
-            "top": 0,
-            "left": 1,
-            "right": 1
+            "top": 5,
+            "left": 2,
+            "right": 3
         }
     },
     "display": {
-        "separator": "  ",
-        "color": {
-            "keys": "magenta",
-            "title": "cyan"
-        },
-        "size": {
-            "ndigits": 1
-        }
+        "separator": " "
     },
     "modules": [
         {
             "type": "title",
-            "format": "╭─ {#1;35}{user-name}{#}{#90}@{host-name}{#} ────────────────"
+            "format": "╭─ {#1;35}{user-name}@{#1;35}{host-name}{#} ─────────────────────────────╮"
         },
         {
             "type": "os",
-            "key": "│ {#35}󰌽 os  {#keys}",
-            "format": "{name}"
+            "key": "│ {#35}󰌽 os      {#keys}│",
+            "format": "{name} {arch}"
         },
         {
             "type": "host",
-            "key": "│ {#35}󰌢 host{#keys}",
-            "format": "ASUS TUF F15"
+            "key": "│ {#35}󰌢 host    {#keys}│",
+            "format": "{name}"
         },
         {
             "type": "kernel",
-            "key": "│ {#35} kern{#keys}",
+            "key": "│ {#35} kernel  {#keys}│",
             "format": "{release}"
         },
         {
             "type": "uptime",
-            "key": "│ {#35}󰅐 up  {#keys}",
-            "format": "{?1}{1}d {?}{2}h {3}m"
+            "key": "│ {#35}󰅐 uptime  {#keys}│"
         },
         {
             "type": "packages",
-            "key": "│ {#35}󰏖 pkgs{#keys}",
+            "key": "│ {#35}󰏖 pkgs    {#keys}│",
             "format": "{all} (pacman)"
         },
         {
             "type": "custom",
-            "format": "├─ {#1;34}Desktop & Shell{#} ───────────"
+            "format": "├─ {#1;34}Desktop & Shell{#} ────────────────────────╮"
         },
         {
             "type": "wm",
-            "key": "│ {#34}󱂬 wm  {#keys}",
+            "key": "│ {#34}󱂬 wm      {#keys}│",
             "format": "{pretty-name} {version}"
         },
         {
+            "type": "custom",
+            "key": "│ {#34}󰖲 shell   {#keys}│",
+            "format": "Quickshell (Material You)"
+        },
+        {
             "type": "terminal",
-            "key": "│ {#34}󰞷 term{#keys}",
+            "key": "│ {#34}󰞷 term    {#keys}│",
             "format": "{pretty-name}"
         },
         {
             "type": "custom",
-            "format": "├─ {#1;32}Hardware & Power{#} ──────────"
+            "format": "├─ {#1;32}Hardware & Power{#} ───────────────────────╮"
         },
         {
-            "type": "command",
-            "key": "│ {#32}󰍛 cpu {#keys}",
-            "text": "sh -c 'cores=$(nproc); name=$(lscpu | awk -F: \"/Model name/ {print \\$2; exit}\" | sed -E \"s/([0-9]+th Gen |Intel\\(R\\) |Core\\(TM\\) |Xeon\\(R\\) |AMD |with Radeon Graphics|@.*|CPU )//g\" | xargs); echo \"$name ($cores)\"'"
+            "type": "cpu",
+            "key": "│ {#32}󰍛 cpu     {#keys}│",
+            "format": "{name} ({cores-logical}) @ {freq-max}"
         },
         {
             "type": "gpu",
-            "key": "│ {#32}󰢮 gpu {#keys}",
-            "hideType": "integrated",
-            "format": "{2}"
+            "key": "│ {#32}󰢮 gpu     {#keys}│",
+            "format": "{name} [{type}]"
         },
         {
             "type": "memory",
-            "key": "│ {#32}󰘚 mem {#keys}",
-            "format": "{1} / {2}"
+            "key": "│ {#32}󰘚 memory  {#keys}│",
+            "format": "{used} / {total} ({percentage})"
         },
         {
             "type": "disk",
-            "key": "│ {#32}󰋊 disk{#keys}",
+            "key": "│ {#32}󰋊 disk    {#keys}│",
             "folders": "/",
-            "format": "{size-used} / {size-total}"
+            "format": "{size-used} / {size-total} ({size-percentage})"
         },
         {
             "type": "battery",
-            "key": "│ {#32}󰂄 bat {#keys}",
+            "key": "│ {#32}󰂄 battery {#keys}│",
             "format": "{capacity} [{status}]"
         },
         {
             "type": "custom",
-            "format": "├─ {#1;36}Palette{#} ────────────────────"
+            "format": "├─ {#1;36}Theme & Colors{#} ────────────────────────╮"
         },
         {
             "type": "colors",
-            "key": "│ {#36}󰏘 cols{#keys}",
+            "key": "│ {#36}󰏘 palette {#keys}│",
             "symbol": "circle"
         },
         {
             "type": "custom",
-            "format": "╰────────────────────────────────"
+            "format": "╰───────────────────────────────────────────╯"
         }
     ]
 }

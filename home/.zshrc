@@ -20,6 +20,8 @@ SAVEHIST=50000
 setopt EXTENDED_HISTORY          # Record timestamp in history
 setopt INC_APPEND_HISTORY        # Immediately append to history file
 setopt SHARE_HISTORY             # Share history across all active terminals
+setopt NO_HUP                    # Do not kill child jobs on shell exit
+trap '' HUP                      # Ignore SIGHUP so scratchpad terminal never exits when hidden
 setopt HIST_EXPIRE_DUPS_FIRST    # Expire duplicate entries first when trimming
 setopt HIST_IGNORE_DUPS          # Don't record duplicate entry
 setopt HIST_IGNORE_ALL_DUPS      # Delete older duplicate entry if a new one is typed
@@ -151,6 +153,19 @@ alias ....='cd ../../..'
 alias c='clear'
 alias q='exit'
 alias nf='fastfetch'
+alias ff='fastfetch -s'
+alias nfs='fastfetch -s'
+
+# Fastfetch wrapper: -s / -m / --mini / --compact for cute bare-metal layout
+fastfetch() {
+    for arg in "$@"; do
+        if [[ "$arg" == "-s" || "$arg" == "--small" || "$arg" == "-m" || "$arg" == "--mini" || "$arg" == "--compact" ]]; then
+            command fastfetch -c "$HOME/.config/fastfetch/compact.jsonc" "${@:#$arg}"
+            return $?
+        fi
+    done
+    command fastfetch "$@"
+}
 
 # Interactive Fuzzy Process Killer: fkill
 fkill() {
@@ -174,3 +189,5 @@ if command -v starship >/dev/null 2>&1; then
 else
     PROMPT='%F{#a6c8ff}%~%f %F{#e5c07b}❯%f '
 fi
+alias killsteam="steam -shutdown"
+alias killdis="pkill -9 -f Discord"
