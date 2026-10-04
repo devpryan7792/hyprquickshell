@@ -9,6 +9,4 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle &")  -- Idle management daemon (screen dim, lock, sleep)
     -- Clipboard history daemon — persistent watchdog loop
     hl.exec_cmd("while true; do wl-paste --watch " .. os.getenv("HOME") .. "/.local/bin/cliphist store || sleep 1; done &")
-    -- Pre-warm seamless scratchpad terminal in special:scratchpad
-    hl.exec_cmd("systemd-run --user ghostty --gtk-single-instance=false --title=Scratchpad")
 end)
