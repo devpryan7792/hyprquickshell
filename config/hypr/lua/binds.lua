@@ -8,6 +8,7 @@ local home = os.getenv("HOME")
 
 -- ── Applications ─────────────────────────────────────────────────────────────
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("ghostty"))
+hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-dropdown-terminal.sh"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("which brave >/dev/null 2>&1 && brave || (which brave-browser >/dev/null 2>&1 && brave-browser || firefox)"))
@@ -18,6 +19,13 @@ hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("quickshell ipc call launcher tog
 
 -- Clipboard History
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("quickshell ipc call launcher clip"))
+
+-- Native Window Overview / Exposé (SUPER+TAB / ALT+TAB)
+hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("quickshell ipc call overview toggle"))
+hl.bind("ALT + TAB",         hl.dsp.exec_cmd("quickshell ipc call overview toggle"))
+
+-- Live Rice Settings Hub (SUPER+,)
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("quickshell ipc call settings toggle"))
 
 -- Wallpaper & Dynamic Theming (SUPER+W, SUPER+SHIFT+W, ALT+T, SUPER+SHIFT+T)
 hl.bind(mainMod .. " + W",           hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))

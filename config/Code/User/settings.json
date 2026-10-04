@@ -1,0 +1,32 @@
+{
+    "workbench.startupEditor": "none",
+    "workbench.colorCustomizations": {
+        "editor.background": "#1a1111",
+        "editor.foreground": "#f0dede",
+        "editorLineNumber.foreground": "#9f8c8c",
+        "editorLineNumber.activeForeground": "#ffb3b6",
+        "sideBar.background": "#22191a",
+        "sideBar.foreground": "#f0dede",
+        "sideBarSectionHeader.background": "#271d1e",
+        "sideBarSectionHeader.foreground": "#f0dede",
+        "activityBar.background": "#22191a",
+        "activityBar.foreground": "#ffb3b6",
+        "activityBar.activeBorder": "#ffb3b6",
+        "statusBar.background": "#22191a",
+        "statusBar.foreground": "#f0dede",
+        "statusBarItem.remoteBackground": "#ffb3b6",
+        "titleBar.activeBackground": "#1a1111",
+        "titleBar.activeForeground": "#f0dede",
+        "titleBar.inactiveBackground": "#1a1111",
+        "titleBar.inactiveForeground": "#9f8c8c",
+        "tab.activeBackground": "#271d1e",
+        "tab.activeForeground": "#f0dede",
+        "tab.inactiveBackground": "#1a1111",
+        "tab.inactiveForeground": "#9f8c8c",
+        "tab.activeBorder": "#ffb3b6",
+        "editorGroupHeader.tabsBackground": "#1a1111",
+        "terminal.background": "#1a1111",
+        "terminal.foreground": "#f0dede",
+        "focusBorder": "#ffb3b6"
+    }
+}

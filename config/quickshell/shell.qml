@@ -10,6 +10,8 @@ ShellRoot {
     property bool wallpaperPickerVisible: false
     property bool calendarVisible: false
     property bool sessionVisible: false
+    property bool settingsVisible: false
+    property bool overviewVisible: false
 
     function closeAll() {
         dashboardVisible = false
@@ -17,6 +19,26 @@ ShellRoot {
         wallpaperPickerVisible = false
         calendarVisible = false
         sessionVisible = false
+        settingsVisible = false
+        overviewVisible = false
+    }
+
+    function toggleSettings() {
+        if (settingsVisible) {
+            settingsVisible = false
+        } else {
+            closeAll()
+            settingsVisible = true
+        }
+    }
+
+    function toggleOverview() {
+        if (overviewVisible) {
+            overviewVisible = false
+        } else {
+            closeAll()
+            overviewVisible = true
+        }
     }
 
     function toggleSession() {
@@ -103,6 +125,16 @@ ShellRoot {
     }
 
     IpcHandler {
+        target: "settings"
+        function toggle() { root.toggleSettings() }
+    }
+
+    IpcHandler {
+        target: "overview"
+        function toggle() { root.toggleOverview() }
+    }
+
+    IpcHandler {
         target: "theme"
         function reload() { Theme.reload() }
     }
@@ -149,6 +181,20 @@ ShellRoot {
         id: sessionMenu
         visible: root.sessionVisible
         onRequestClose: root.sessionVisible = false
+    }
+
+    // Live Rice Settings Hub Modal
+    SettingsHub {
+        id: settingsHub
+        visible: root.settingsVisible
+        onRequestClose: root.settingsVisible = false
+    }
+
+    // Native Window Overview / Exposé Modal
+    Overview {
+        id: overview
+        visible: root.overviewVisible
+        onRequestClose: root.overviewVisible = false
     }
 
     // IPC handler for notifications

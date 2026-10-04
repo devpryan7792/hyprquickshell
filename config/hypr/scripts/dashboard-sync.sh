@@ -33,6 +33,11 @@ SCHEME=$(cat "$HOME/.cache/hyprdots-theme-scheme" 2>/dev/null || echo "scheme-vi
 [ -z "$SURF" ] && SURF="obsidian"
 [ -z "$SCHEME" ] && SCHEME="scheme-vibrant"
 
+GM_STATE="off"
+if [[ -f "$HOME/.cache/hyprdots-gamemode" ]] && [[ "$(cat "$HOME/.cache/hyprdots-gamemode" 2>/dev/null)" == "1" ]]; then
+    GM_STATE="on"
+fi
+
 UPTIME=$(uptime -p 2>/dev/null | sed -e 's/up //' -e 's/ hours\?,/h/' -e 's/ minutes\?/m/' -e 's/ days\?,/d/' || echo "online")
 
-echo "{\"vol\":$VOL,\"muted\":$MUTED,\"bri\":$BRI,\"wifi_radio\":\"$WIFI_RADIO\",\"wifi_ssid\":\"$WIFI_SSID\",\"caffeine\":\"$CAFF_STATE\",\"nightlight\":\"$NL_STATE\",\"surface_mode\":\"$SURF\",\"scheme\":\"$SCHEME\",\"uptime\":\"$UPTIME\"}"
+echo "{\"vol\":$VOL,\"muted\":$MUTED,\"bri\":$BRI,\"wifi_radio\":\"$WIFI_RADIO\",\"wifi_ssid\":\"$WIFI_SSID\",\"caffeine\":\"$CAFF_STATE\",\"nightlight\":\"$NL_STATE\",\"gamemode\":\"$GM_STATE\",\"surface_mode\":\"$SURF\",\"scheme\":\"$SCHEME\",\"uptime\":\"$UPTIME\"}"

@@ -38,6 +38,7 @@ PanelWindow {
     property string wifiSsid: ""
     property string caffeineState: "off"
     property string nightLightState: "off"
+    property bool gameModeState: false
     property string surfaceMode: "obsidian"
     property string activeScheme: "scheme-vibrant"
     property string uptimeStr: "Online"
@@ -110,6 +111,7 @@ PanelWindow {
                     dashboardWindow.wifiSsid = d.wifi_ssid ?? ""
                     dashboardWindow.caffeineState = d.caffeine ?? "off"
                     dashboardWindow.nightLightState = d.nightlight ?? "off"
+                    dashboardWindow.gameModeState = (d.gamemode === "on")
                     dashboardWindow.surfaceMode = d.surface_mode ?? "obsidian"
                     dashboardWindow.activeScheme = d.scheme ?? "scheme-vibrant"
                     dashboardWindow.uptimeStr = d.uptime ?? "Online"
@@ -757,6 +759,129 @@ PanelWindow {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: dashboardWindow.launchApp("ghostty -e btop")
+                            }
+                        }
+
+                        // TILE 7: Game / Performance Mode
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 48
+                            radius: 8
+                            readonly property bool isGmOn: dashboardWindow.gameModeState
+                            color: isGmOn ? Qt.rgba(Theme.red.r, Theme.red.g, Theme.red.b, 0.16) : Theme.bg1
+                            border.color: isGmOn ? Theme.red : (gmMouse.containsMouse ? Theme.accent : Theme.bg3)
+                            border.width: isGmOn ? 1.5 : 1
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 8
+
+                                Rectangle {
+                                    width: 32
+                                    height: 32
+                                    radius: 6
+                                    color: parent.parent.isGmOn ? Theme.red : Theme.bg2
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰓅"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 14
+                                        color: parent.parent.isGmOn ? Theme.bg0 : Theme.silver
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+                                    Text {
+                                        text: "Game Mode"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                    }
+                                    Text {
+                                        text: parent.parent.isGmOn ? "Zero Latency" : "Normal FX"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        color: parent.parent.isGmOn ? Theme.red : Theme.silver
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                id: gmMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    dashboardWindow.gameModeState = !dashboardWindow.gameModeState
+                                    dashboardWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/game-mode.sh toggle")
+                                }
+                            }
+                        }
+
+                        // TILE 8: Rice Studio (Live Sliders & FX hub)
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 48
+                            radius: 8
+                            color: Theme.bg1
+                            border.color: riceMouse.containsMouse ? Theme.accent : Theme.bg3
+                            border.width: 1
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 8
+
+                                Rectangle {
+                                    width: 32
+                                    height: 32
+                                    radius: 6
+                                    color: Theme.bg2
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰒓"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 14
+                                        color: Theme.accent
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 1
+                                    Text {
+                                        text: "Rice Studio"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                    }
+                                    Text {
+                                        text: "Live Sliders Hub"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        color: Theme.silver
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                id: riceMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    dashboardWindow.close()
+                                    dashboardWindow.runDetached("quickshell ipc call settings toggle")
+                                }
                             }
                         }
                     }

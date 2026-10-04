@@ -7,3 +7,5 @@ CalendarDropdown 1.0 CalendarDropdown.qml
 singleton NotificationManager NotificationManager.qml
 NotificationPopup 1.0 NotificationPopup.qml
 SessionMenu 1.0 SessionMenu.qml
+SettingsHub 1.0 SettingsHub.qml
+Overview 1.0 Overview.qml
