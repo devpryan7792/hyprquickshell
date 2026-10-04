@@ -9,7 +9,7 @@
         "padding": {
             "top": 0,
             "left": 1,
-            "right": 2
+            "right": 1
         }
     },
     "display": {
@@ -25,47 +25,90 @@
     "modules": [
         {
             "type": "title",
-            "format": "{#1;35}{user-name}{#}{#90}@{host-name}{#}"
+            "format": "╭─ {#1;35}{user-name}{#}{#90}@{host-name}{#} ────────────────"
         },
         {
             "type": "os",
-            "key": "󰌽 os  ",
+            "key": "│ {#35}󰌽 os  {#keys}",
             "format": "{name}"
         },
         {
+            "type": "host",
+            "key": "│ {#35}󰌢 host{#keys}",
+            "format": "ASUS TUF F15"
+        },
+        {
+            "type": "kernel",
+            "key": "│ {#35} kern{#keys}",
+            "format": "{release}"
+        },
+        {
+            "type": "uptime",
+            "key": "│ {#35}󰅐 up  {#keys}",
+            "format": "{?1}{1}d {?}{2}h {3}m"
+        },
+        {
+            "type": "packages",
+            "key": "│ {#35}󰏖 pkgs{#keys}",
+            "format": "{all} (pacman)"
+        },
+        {
+            "type": "custom",
+            "format": "├─ {#1;34}Desktop & Shell{#} ───────────"
+        },
+        {
             "type": "wm",
-            "key": "󱂬 wm  ",
-            "format": "{pretty-name}"
+            "key": "│ {#34}󱂬 wm  {#keys}",
+            "format": "{pretty-name} {version}"
         },
         {
             "type": "terminal",
-            "key": "󰞷 term",
+            "key": "│ {#34}󰞷 term{#keys}",
             "format": "{pretty-name}"
         },
         {
+            "type": "custom",
+            "format": "├─ {#1;32}Hardware & Power{#} ──────────"
+        },
+        {
             "type": "command",
-            "key": "󰍛 cpu ",
+            "key": "│ {#32}󰍛 cpu {#keys}",
             "text": "sh -c 'cores=$(nproc); name=$(lscpu | awk -F: \"/Model name/ {print \\$2; exit}\" | sed -E \"s/([0-9]+th Gen |Intel\\(R\\) |Core\\(TM\\) |Xeon\\(R\\) |AMD |with Radeon Graphics|@.*|CPU )//g\" | xargs); echo \"$name ($cores)\"'"
         },
         {
             "type": "gpu",
-            "key": "󰢮 gpu ",
+            "key": "│ {#32}󰢮 gpu {#keys}",
             "hideType": "integrated",
             "format": "{2}"
         },
         {
             "type": "memory",
-            "key": "󰘚 mem ",
+            "key": "│ {#32}󰘚 mem {#keys}",
             "format": "{1} / {2}"
         },
         {
-            "type": "uptime",
-            "key": "󰅐 up  ",
-            "format": "{?1}{1}d {?}{2}h {3}m"
+            "type": "disk",
+            "key": "│ {#32}󰋊 disk{#keys}",
+            "folders": "/",
+            "format": "{size-used} / {size-total}"
+        },
+        {
+            "type": "battery",
+            "key": "│ {#32}󰂄 bat {#keys}",
+            "format": "{capacity} [{status}]"
+        },
+        {
+            "type": "custom",
+            "format": "├─ {#1;36}Palette{#} ────────────────────"
         },
         {
             "type": "colors",
+            "key": "│ {#36}󰏘 cols{#keys}",
             "symbol": "circle"
+        },
+        {
+            "type": "custom",
+            "format": "╰────────────────────────────────"
         }
     ]
 }
