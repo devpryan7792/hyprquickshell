@@ -152,8 +152,82 @@ def main():
                     "p8": "#6e6a86", "p9": "#eb6f92", "p10": "#31748f", "p11": "#f6c177",
                     "p12": "#9ccfd8", "p13": "#c4a7e7", "p14": "#ebbcba", "p15": "#e0def4"
                 }
+            },
+            "blood_crimson": {
+                "qs": {
+                    "bg0": "#08080c", "bg1": "#100e14", "bg2": "#18121a", "bg3": "#261620",
+                    "fg1": "#f5e6e8", "fg0": "#f5e6e8", "gray": "#8a666e", "silver": "#4a2a32",
+                    "accent": "#ff4d5a", "primary": "#ff4d5a", "secondary": "#ff7582",
+                    "tertiary": "#ff2a42", "red": "#ff1744"
+                },
+                "hl": {
+                    "bg0": "08080c", "bg1": "100e14", "bg2": "18121a", "bg3": "261620",
+                    "fg1": "f5e6e8", "primary": "ff4d5a", "secondary": "ff7582", "tertiary": "ff2a42",
+                    "gray": "8a666e", "silver": "4a2a32", "red": "ff1744", "green": "ff7582",
+                    "yellow": "ffa4ad", "blue": "ff4d5a", "purple": "ff2a42", "aqua": "ff7582",
+                    "orange": "ff5252"
+                },
+                "ghostty": {
+                    "foreground": "#f5e6e8", "background": "#08080c", "cursor": "#ff4d5a",
+                    "sel_bg": "#261620", "sel_fg": "#ffffff",
+                    "p0": "#08080c", "p1": "#ff1744", "p2": "#ff7582", "p3": "#ffa4ad",
+                    "p4": "#ff4d5a", "p5": "#ff2a42", "p6": "#ff7582", "p7": "#f5e6e8",
+                    "p8": "#4a2a32", "p9": "#ff1744", "p10": "#ff7582", "p11": "#ffa4ad",
+                    "p12": "#ff4d5a", "p13": "#ff2a42", "p14": "#ff7582", "p15": "#ffffff"
+                }
+            },
+            "samurai_steel": {
+                "qs": {
+                    "bg0": "#0a0a0e", "bg1": "#121218", "bg2": "#1a1a22", "bg3": "#262632",
+                    "fg1": "#f3f4f6", "fg0": "#f3f4f6", "gray": "#6b7280", "silver": "#374151",
+                    "accent": "#f3f4f6", "primary": "#f3f4f6", "secondary": "#d1d5db",
+                    "tertiary": "#9ca3af", "red": "#ff5449"
+                },
+                "hl": {
+                    "bg0": "0a0a0e", "bg1": "121218", "bg2": "1a1a22", "bg3": "262632",
+                    "fg1": "f3f4f6", "primary": "f3f4f6", "secondary": "d1d5db", "tertiary": "9ca3af",
+                    "gray": "6b7280", "silver": "374151", "red": "ff5449", "green": "9ca3af",
+                    "yellow": "d1d5db", "blue": "f3f4f6", "purple": "d1d5db", "aqua": "374151",
+                    "orange": "9ca3af"
+                },
+                "ghostty": {
+                    "foreground": "#f3f4f6", "background": "#0a0a0e", "cursor": "#f3f4f6",
+                    "sel_bg": "#262632", "sel_fg": "#ffffff",
+                    "p0": "#0a0a0e", "p1": "#ff5449", "p2": "#9ca3af", "p3": "#d1d5db",
+                    "p4": "#f3f4f6", "p5": "#9ca3af", "p6": "#d1d5db", "p7": "#f3f4f6",
+                    "p8": "#374151", "p9": "#ff5449", "p10": "#9ca3af", "p11": "#d1d5db",
+                    "p12": "#f3f4f6", "p13": "#9ca3af", "p14": "#d1d5db", "p15": "#ffffff"
+                }
+            },
+            "amoled": {
+                "qs": {
+                    "bg0": "#000000", "bg1": "#080808", "bg2": "#121212", "bg3": "#1c1c1c",
+                    "fg1": "#f3f4f6", "fg0": "#ffffff", "gray": "#71717a", "silver": "#27272a",
+                    "accent": "#ffffff", "primary": "#ffffff", "secondary": "#a1a1aa",
+                    "tertiary": "#71717a", "red": "#ef4444"
+                },
+                "hl": {
+                    "bg0": "000000", "bg1": "080808", "bg2": "121212", "bg3": "1c1c1c",
+                    "fg1": "f3f4f6", "primary": "ffffff", "secondary": "a1a1aa", "tertiary": "71717a",
+                    "gray": "71717a", "silver": "27272a", "red": "ef4444", "green": "10b981",
+                    "yellow": "f59e0b", "blue": "3b82f6", "purple": "8b5cf6", "aqua": "06b6d4",
+                    "orange": "f97316"
+                },
+                "ghostty": {
+                    "foreground": "#ffffff", "background": "#000000", "cursor": "#ffffff",
+                    "sel_bg": "#1c1c1c", "sel_fg": "#ffffff",
+                    "p0": "#000000", "p1": "#ef4444", "p2": "#10b981", "p3": "#f59e0b",
+                    "p4": "#3b82f6", "p5": "#8b5cf6", "p6": "#06b6d4", "p7": "#f3f4f6",
+                    "p8": "#27272a", "p9": "#ef4444", "p10": "#10b981", "p11": "#f59e0b",
+                    "p12": "#3b82f6", "p13": "#8b5cf6", "p14": "#06b6d4", "p15": "#ffffff"
+                }
             }
         }
+        presets["blood"] = presets["blood_crimson"]
+        presets["crimson"] = presets["blood_crimson"]
+        presets["steel"] = presets["samurai_steel"]
+        presets["monochrome"] = presets["samurai_steel"]
+        presets["pitch_black"] = presets["amoled"]
         selected = presets.get(preset, presets["tokyonight"])
         qs = selected["qs"]
         hl = selected["hl"]
@@ -196,27 +270,57 @@ def main():
             print("Error checking saturation:", e)
 
         if is_grayscale:
-            # Samurai Steel Monochrome (eliminates fake Google Blue #4285F4 fallback)
+            if surface_mode == "amoled":
+                bg0, bg1, bg2, bg3 = "#000000", "#080808", "#121212", "#1c1c1c"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "000000", "080808", "121212", "1c1c1c"
+                ghostty_bg = "#000000"
+                prim, sec, tert = "#ffffff", "#a1a1aa", "#71717a"
+                red = "#ff5449"
+            elif surface_mode in ["blood", "crimson", "blood_crimson"]:
+                bg0, bg1, bg2, bg3 = "#08080c", "#100e14", "#18121a", "#261620"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "08080c", "100e14", "18121a", "261620"
+                ghostty_bg = "#08080c"
+                prim, sec, tert = "#ff4d5a", "#ff7582", "#ff2a42"
+                red = "#ff1744"
+            elif surface_mode in ["steel", "monochrome", "samurai_steel"]:
+                bg0, bg1, bg2, bg3 = "#0a0a0e", "#121218", "#1a1a22", "#262632"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "0a0a0e", "121218", "1a1a22", "262632"
+                ghostty_bg = "#0a0a0e"
+                prim, sec, tert = "#f3f4f6", "#d1d5db", "#9ca3af"
+                red = "#ff5449"
+            elif surface_mode == "material":
+                bg0, bg1, bg2, bg3 = "#141418", "#1b1b22", "#23232c", "#2d2d38"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "141418", "1b1b22", "23232c", "2d2d38"
+                ghostty_bg = "#141418"
+                prim, sec, tert = "#e4e4e7", "#a1a1aa", "#71717a"
+                red = "#ff5449"
+            else: # obsidian (default)
+                bg0, bg1, bg2, bg3 = "#0b0c10", "#121318", "#181a20", "#22242c"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "0b0c10", "121318", "181a20", "22242c"
+                ghostty_bg = "#0b0c10"
+                prim, sec, tert = "#f3f4f6", "#d1d5db", "#9ca3af"
+                red = "#ff5449"
+
             qs = {
-                "bg0": "#0b0c10", "bg1": "#121318", "bg2": "#181a20", "bg3": "#22242c",
+                "bg0": bg0, "bg1": bg1, "bg2": bg2, "bg3": bg3,
                 "fg1": "#f3f4f6", "fg0": "#f3f4f6", "gray": "#6b7280", "silver": "#374151",
-                "accent": "#f3f4f6", "primary": "#f3f4f6", "secondary": "#d1d5db",
-                "tertiary": "#9ca3af", "red": "#ff5449"
+                "accent": prim, "primary": prim, "secondary": sec,
+                "tertiary": tert, "red": red
             }
             hl = {
-                "bg0": "0b0c10", "bg1": "121318", "bg2": "181a20", "bg3": "22242c",
-                "fg1": "f3f4f6", "primary": "f3f4f6", "secondary": "d1d5db", "tertiary": "9ca3af",
-                "gray": "6b7280", "silver": "374151", "red": "ff5449", "green": "9ca3af",
-                "yellow": "d1d5db", "blue": "f3f4f6", "purple": "d1d5db", "aqua": "374151",
-                "orange": "9ca3af"
+                "bg0": hl_bg0, "bg1": hl_bg1, "bg2": hl_bg2, "bg3": hl_bg3,
+                "fg1": "f3f4f6", "primary": prim.lstrip("#"), "secondary": sec.lstrip("#"), "tertiary": tert.lstrip("#"),
+                "gray": "6b7280", "silver": "374151", "red": red.lstrip("#"), "green": tert.lstrip("#"),
+                "yellow": sec.lstrip("#"), "blue": prim.lstrip("#"), "purple": sec.lstrip("#"), "aqua": "374151",
+                "orange": tert.lstrip("#")
             }
             ghostty = {
-                "foreground": "#f3f4f6", "background": "#0b0c10", "cursor": "#f3f4f6",
-                "sel_bg": "#374151", "sel_fg": "#ffffff",
-                "p0": "#0b0c10", "p1": "#ff5449", "p2": "#9ca3af", "p3": "#d1d5db",
-                "p4": "#f3f4f6", "p5": "#9ca3af", "p6": "#d1d5db", "p7": "#f3f4f6",
-                "p8": "#374151", "p9": "#ff5449", "p10": "#9ca3af", "p11": "#d1d5db",
-                "p12": "#f3f4f6", "p13": "#9ca3af", "p14": "#d1d5db", "p15": "#ffffff"
+                "foreground": "#f3f4f6", "background": ghostty_bg, "cursor": prim,
+                "sel_bg": bg3, "sel_fg": "#ffffff",
+                "p0": ghostty_bg, "p1": red, "p2": tert, "p3": sec,
+                "p4": prim, "p5": tert, "p6": sec, "p7": "#f3f4f6",
+                "p8": "#374151", "p9": red, "p10": tert, "p11": sec,
+                "p12": prim, "p13": tert, "p14": sec, "p15": "#ffffff"
             }
         else:
             # Run Matugen to get full Material You tonal palette
@@ -241,11 +345,30 @@ def main():
             sec_cont = c["secondary_container"]["default"]["color"]
             tert_cont = c["tertiary_container"]["default"]["color"]
 
-            if surface_mode == "obsidian":
+            if surface_mode == "amoled":
+                bg0, bg1, bg2, bg3 = "#000000", "#080808", "#121212", "#1c1c1c"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "000000", "080808", "121212", "1c1c1c"
+                ghostty_bg = "#000000"
+            elif surface_mode in ["blood", "crimson", "blood_crimson"]:
+                bg0, bg1, bg2, bg3 = "#08080c", "#100e14", "#18121a", "#261620"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "08080c", "100e14", "18121a", "261620"
+                ghostty_bg = "#08080c"
+                prim = "#ff4d5a"
+                sec = "#ff7582"
+                tert = "#ff2a42"
+                err = "#ff1744"
+            elif surface_mode in ["steel", "monochrome", "samurai_steel"]:
+                bg0, bg1, bg2, bg3 = "#0a0a0e", "#121218", "#1a1a22", "#262632"
+                hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "0a0a0e", "121218", "1a1a22", "262632"
+                ghostty_bg = "#0a0a0e"
+                prim = "#f3f4f6"
+                sec = "#d1d5db"
+                tert = "#9ca3af"
+            elif surface_mode == "obsidian":
                 bg0, bg1, bg2, bg3 = "#0b0c10", "#121318", "#181a20", "#22242c"
                 hl_bg0, hl_bg1, hl_bg2, hl_bg3 = "0b0c10", "121318", "181a20", "22242c"
                 ghostty_bg = "#0b0c10"
-            else:
+            else: # material
                 bg0 = c["background"]["default"]["color"]
                 bg1 = c["surface_container_low"]["default"]["color"]
                 bg2 = c["surface_container"]["default"]["color"]

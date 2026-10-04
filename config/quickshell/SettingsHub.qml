@@ -82,6 +82,20 @@ PanelWindow {
         }
     }
 
+    // Process to read current surface mode
+    Process {
+        id: readSurfaceProc
+        command: ["cat", Quickshell.env("HOME") + "/.cache/hyprdots-surface-mode"]
+        stdout: SplitParser {
+            onRead: data => {
+                let s = data.trim()
+                if (s.length > 0) {
+                    settingsWindow.activeSurface = s
+                }
+            }
+        }
+    }
+
     // Process polling timer when Processes tab is open
     Timer {
         id: statsTimer
@@ -95,8 +109,11 @@ PanelWindow {
     }
 
     onVisibleChanged: {
-        if (visible && currentTab === 1) {
-            hwStatsProc.running = true
+        if (visible) {
+            readSurfaceProc.running = true
+            if (currentTab === 1) {
+                hwStatsProc.running = true
+            }
         }
     }
 
@@ -564,78 +581,53 @@ PanelWindow {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8
+                        spacing: 6
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 36
-                            radius: 8
-                            color: Theme.bg1
-                            border.color: obsMouse.containsMouse ? Theme.accent : Theme.bg2
-                            border.width: 1
+                        Repeater {
+                            model: [
+                                { id: "obsidian", name: "Obsidian", icon: "󰌶" },
+                                { id: "amoled", name: "AMOLED 0%", icon: "🖤" },
+                                { id: "blood", name: "Blood Red", icon: "🩸" },
+                                { id: "steel", name: "Steel", icon: "⚔️" },
+                                { id: "material", name: "Material", icon: "󰏘" }
+                            ]
 
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 6
-                                Text {
-                                    text: "󰌶"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 13
-                                    color: Theme.accent
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 36
+                                radius: 8
+                                readonly property bool isActive: settingsWindow.activeSurface === modelData.id
+                                color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (surfMouse.containsMouse ? Theme.bg2 : Theme.bg1)
+                                border.color: isActive ? Theme.accent : (surfMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2)
+                                border.width: isActive ? 1.5 : 1
+
+                                RowLayout {
+                                    anchors.centerIn: parent
+                                    spacing: 4
+                                    Text {
+                                        text: modelData.icon
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 11
+                                        color: parent.parent.isActive ? Theme.accent : Theme.fg1
+                                    }
+                                    Text {
+                                        text: modelData.name
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 9
+                                        color: parent.parent.isActive ? Theme.accent : Theme.fg0
+                                    }
                                 }
-                                Text {
-                                    text: "Obsidian Black"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.bold: true
-                                    font.pixelSize: 10
-                                    color: Theme.fg0
-                                }
-                            }
 
-                            MouseArea {
-                                id: obsMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface obsidian")
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 36
-                            radius: 8
-                            color: Theme.bg1
-                            border.color: matMouse.containsMouse ? Theme.accent : Theme.bg2
-                            border.width: 1
-
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 6
-                                Text {
-                                    text: "󰏘"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 13
-                                    color: Theme.accent
-                                }
-                                Text {
-                                    text: "Material Tint"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.bold: true
-                                    font.pixelSize: 10
-                                    color: Theme.fg0
-                                }
-                            }
-
-                            MouseArea {
-                                id: matMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface material")
+                                MouseArea {
+                                    id: surfMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        settingsWindow.activeSurface = modelData.id
+                                        settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface " + modelData.id)
+                                    }
                                 }
                             }
                         }

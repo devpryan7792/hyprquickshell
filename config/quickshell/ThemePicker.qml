@@ -202,6 +202,30 @@ PanelWindow {
                                 colors: [Theme.accent, Theme.primary, Theme.secondary, Theme.tertiary]
                             },
                             {
+                                id: "blood_crimson",
+                                name: "Blood Crimson",
+                                icon: "🩸",
+                                desc: "Katana ink black with razor-sharp blood crimson accents",
+                                bg: "#08080c",
+                                colors: ["#ff4d5a", "#ff7582", "#ff2a42", "#ff1744"]
+                            },
+                            {
+                                id: "samurai_steel",
+                                name: "Samurai Steel",
+                                icon: "⚔️",
+                                desc: "Crisp platinum monochrome with deep obsidian darks",
+                                bg: "#0a0a0e",
+                                colors: ["#f3f4f6", "#d1d5db", "#9ca3af", "#6b7280"]
+                            },
+                            {
+                                id: "amoled",
+                                name: "AMOLED Pitch Black",
+                                icon: "🖤",
+                                desc: "100% true pitch black with high contrast white & accents",
+                                bg: "#000000",
+                                colors: ["#ffffff", "#a1a1aa", "#71717a", "#ef4444"]
+                            },
+                            {
                                 id: "tokyonight",
                                 name: "Tokyo Night",
                                 icon: "󰖔",
