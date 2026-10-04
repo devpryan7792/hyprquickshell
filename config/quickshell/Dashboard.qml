@@ -51,7 +51,6 @@ PanelWindow {
     property int hwDisk: 0
     property string hwDiskStr: "0G / 0G"
     property var topProcs: []
-    property bool showProcessList: true
 
     // Active player accessor
     property var player: (Mpris.players && Mpris.players.values && Mpris.players.values.length > 0)
@@ -1338,14 +1337,13 @@ PanelWindow {
                         }
                     }
 
-                    // 5. SYSTEM HARDWARE RESOURCES (CPU, RAM, DISK)
+                    // 5. HARDWARE TELEMETRY TILE (CPU, RAM, DISK)
                     Rectangle {
                         Layout.fillWidth: true
-                        implicitHeight: dashboardWindow.showProcessList ? 280 : 100
-                        Behavior on implicitHeight { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                        implicitHeight: 112
                         radius: 8
                         color: Theme.bg1
-                        border.color: dashboardWindow.showProcessList ? Theme.teal : Theme.bg3
+                        border.color: Theme.bg3
                         border.width: 1
                         clip: true
 
@@ -1356,7 +1354,7 @@ PanelWindow {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 24
+                                height: 22
                                 radius: 4
                                 color: headerMouse.containsMouse ? Theme.bg2 : "transparent"
                                 RowLayout {
@@ -1364,7 +1362,7 @@ PanelWindow {
                                     anchors.leftMargin: 4
                                     anchors.rightMargin: 4
                                     Text {
-                                        text: "󰍛 System Telemetry & Processes"
+                                        text: "󰍛 System Telemetry"
                                         font.family: "JetBrainsMono Nerd Font"
                                         font.bold: true
                                         font.pixelSize: 11
@@ -1372,7 +1370,7 @@ PanelWindow {
                                         Layout.fillWidth: true
                                     }
                                     Text {
-                                        text: dashboardWindow.showProcessList ? "󰅃 Hide Processes" : "󰅀 Show Processes"
+                                        text: "󰒓 Manage in Hub 󰅂"
                                         font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 9
                                         color: Theme.teal
@@ -1383,7 +1381,10 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: dashboardWindow.showProcessList = !dashboardWindow.showProcessList
+                                    onClicked: {
+                                        dashboardWindow.close()
+                                        dashboardWindow.runDetached("quickshell ipc call settings toggle")
+                                    }
                                 }
                             }
 
@@ -1408,40 +1409,25 @@ PanelWindow {
                                 Text { text: dashboardWindow.hwCpu + "%"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.accent; Layout.preferredWidth: 34; horizontalAlignment: Text.AlignRight }
                             }
 
-                            // RAM Row (Clickable to inspect top processes)
-                            Rectangle {
+                            // RAM Row
+                            RowLayout {
                                 Layout.fillWidth: true
-                                height: 20
-                                radius: 4
-                                color: ramClickArea.containsMouse ? Theme.bg2 : "transparent"
-
-                                RowLayout {
-                                    anchors.fill: parent
-                                    spacing: 8
-                                    Text { text: "RAM"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver; Layout.preferredWidth: 32 }
+                                spacing: 8
+                                Text { text: "RAM"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver; Layout.preferredWidth: 32 }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 4
+                                    radius: 2
+                                    color: Theme.bg2
                                     Rectangle {
-                                        Layout.fillWidth: true
-                                        height: 4
+                                        width: parent.width * (Math.min(100, Math.max(0, dashboardWindow.hwRam)) / 100.0)
+                                        height: parent.height
                                         radius: 2
-                                        color: Theme.bg2
-                                        Rectangle {
-                                            width: parent.width * (Math.min(100, Math.max(0, dashboardWindow.hwRam)) / 100.0)
-                                            height: parent.height
-                                            radius: 2
-                                            color: Theme.teal
-                                            Behavior on width { NumberAnimation { duration: 250 } }
-                                        }
+                                        color: Theme.teal
+                                        Behavior on width { NumberAnimation { duration: 250 } }
                                     }
-                                    Text { text: dashboardWindow.hwRamStr; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.teal; Layout.preferredWidth: 70; horizontalAlignment: Text.AlignRight }
                                 }
-
-                                MouseArea {
-                                    id: ramClickArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: dashboardWindow.showProcessList = !dashboardWindow.showProcessList
-                                }
+                                Text { text: dashboardWindow.hwRamStr; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.teal; Layout.preferredWidth: 70; horizontalAlignment: Text.AlignRight }
                             }
 
                             // Disk Storage Row
@@ -1463,97 +1449,6 @@ PanelWindow {
                                     }
                                 }
                                 Text { text: dashboardWindow.hwDiskStr; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.purple; Layout.preferredWidth: 70; horizontalAlignment: Text.AlignRight }
-                            }
-
-                            // Expanded Process Inspector Section
-                            ColumnLayout {
-                                visible: dashboardWindow.showProcessList
-                                Layout.fillWidth: true
-                                spacing: 4
-
-                                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bg3 }
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    Text { text: "Top Resource Consumers"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.teal; Layout.fillWidth: true }
-                                    Text { text: "Click Kill to terminate"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 8; color: Theme.silver }
-                                }
-
-                                Repeater {
-                                    model: dashboardWindow.topProcs
-                                    Rectangle {
-                                        Layout.fillWidth: true
-                                        height: 28
-                                        radius: 6
-                                        color: Theme.bg0
-                                        border.color: Theme.bg3
-                                        border.width: 1
-
-                                        RowLayout {
-                                            anchors.fill: parent
-                                            anchors.leftMargin: 8
-                                            anchors.rightMargin: 6
-                                            spacing: 6
-
-                                            Text { text: String(index + 1) + "."; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.silver }
-                                            Text { text: modelData.name; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.fg0; elide: Text.ElideRight; Layout.fillWidth: true }
-                                            Text { text: "PID " + modelData.pid; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 8; color: Theme.silver }
-                                            Text { text: modelData.mem; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.teal }
-
-                                            Rectangle {
-                                                id: killBtn
-                                                width: 46
-                                                height: 20
-                                                radius: 4
-                                                color: killMouse.containsMouse ? Theme.red : Theme.bg2
-                                                border.color: killMouse.containsMouse ? Theme.red : Theme.bg3
-                                                border.width: 1
-
-                                                RowLayout {
-                                                    anchors.centerIn: parent
-                                                    spacing: 3
-                                                    Text {
-                                                        text: "󰅖"
-                                                        font.family: "JetBrainsMono Nerd Font"
-                                                        font.pixelSize: 9
-                                                        color: killMouse.containsMouse ? Theme.bg0 : Theme.red
-                                                    }
-                                                    Text {
-                                                        text: "Kill"
-                                                        font.family: "JetBrainsMono Nerd Font"
-                                                        font.bold: true
-                                                        font.pixelSize: 9
-                                                        color: killMouse.containsMouse ? Theme.bg0 : Theme.fg1
-                                                    }
-                                                }
-
-                                                MouseArea {
-                                                    id: killMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        let targetPid = String(modelData.pid)
-                                                        let targetName = String(modelData.name)
-
-                                                        // Optimistically update list in 0ms
-                                                        let updated = []
-                                                        for (let i = 0; i < dashboardWindow.topProcs.length; i++) {
-                                                            if (String(dashboardWindow.topProcs[i].pid) !== targetPid) {
-                                                                updated.push(dashboardWindow.topProcs[i])
-                                                            }
-                                                        }
-                                                        dashboardWindow.topProcs = updated
-
-                                                        // Force terminate process
-                                                        dashboardWindow.runDetached("kill -9 " + targetPid + " && notify-send -a 'Process Monitor' -i 'process-stop' 'Process Terminated' 'Killed " + targetName + " (PID " + targetPid + ")'")
-                                                        hwStatsProc.running = true
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }

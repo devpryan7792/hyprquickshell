@@ -23,15 +23,16 @@ hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("quickshell ipc call launcher clip"))
 hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("quickshell ipc call overview toggle"))
 hl.bind("ALT + TAB",         hl.dsp.exec_cmd("quickshell ipc call overview toggle"))
 
--- Live Rice Settings Hub (SUPER+,)
+-- System & Desktop Hub (SUPER+,)
 hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("quickshell ipc call settings toggle"))
 
--- Wallpaper & Dynamic Theming (SUPER+W, SUPER+SHIFT+W, ALT+T, SUPER+SHIFT+T)
-hl.bind(mainMod .. " + W",           hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))
-hl.bind(mainMod .. " + SHIFT + W",   hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))
-hl.bind(mainMod .. " + ALT + W",     hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))
-hl.bind("ALT + T",                   hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))
-hl.bind(mainMod .. " + SHIFT + T",   hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-wallpaper.sh"))
+-- Wallpaper & Theming Decoupled
+-- SUPER + W: Full Synchronized Rice (Wallpaper + Material You Theme)
+hl.bind(mainMod .. " + W",         hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/theme-switcher.sh"))
+-- SUPER + SHIFT + W: Wallpaper Only (Keeps active theme intact)
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/theme-switcher.sh --wall-only"))
+-- ALT + T: Curated Theme Preset Picker (Catppuccin, Tokyo Night, Gruvbox, etc.)
+hl.bind("ALT + T",                 hl.dsp.exec_cmd("quickshell ipc call theme_picker toggle"))
 
 -- Control Center / Dashboard Side Panel
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("quickshell ipc call dashboard toggle"))
@@ -44,9 +45,8 @@ hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd(home .. "/.config/hypr/script
 -- Lock screen with hyprlock (SUPER+L)
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 
--- Power & Session Menu (SUPER+ESCAPE and SUPER+X)
-hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("quickshell ipc call session toggle"))
-hl.bind(mainMod .. " + X",      hl.dsp.exec_cmd("quickshell ipc call session toggle"))
+-- Power & Session Menu (SUPER+X only)
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("quickshell ipc call session toggle"))
 
 -- Exit Hyprland compositor
 hl.bind(mainMod .. " + M", hl.dsp.exit())

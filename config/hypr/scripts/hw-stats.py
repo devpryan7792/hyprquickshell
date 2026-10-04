@@ -8,7 +8,7 @@ def get_top_ram():
     procs = []
     try:
         res = subprocess.check_output(['ps', '-eo', 'pid,%mem,rss,comm', '--sort=-rss'], timeout=1).decode()
-        lines = res.strip().split('\n')[1:7]
+        lines = res.strip().split('\n')[1:11]
         for l in lines:
             parts = l.strip().split(None, 3)
             if len(parts) == 4:

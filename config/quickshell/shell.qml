@@ -12,6 +12,7 @@ ShellRoot {
     property bool sessionVisible: false
     property bool settingsVisible: false
     property bool overviewVisible: false
+    property bool themePickerVisible: false
 
     function closeAll() {
         dashboardVisible = false
@@ -21,6 +22,7 @@ ShellRoot {
         sessionVisible = false
         settingsVisible = false
         overviewVisible = false
+        themePickerVisible = false
     }
 
     function toggleSettings() {
@@ -38,6 +40,15 @@ ShellRoot {
         } else {
             closeAll()
             overviewVisible = true
+        }
+    }
+
+    function toggleThemePicker() {
+        if (themePickerVisible) {
+            themePickerVisible = false
+        } else {
+            closeAll()
+            themePickerVisible = true
         }
     }
 
@@ -135,6 +146,11 @@ ShellRoot {
     }
 
     IpcHandler {
+        target: "theme_picker"
+        function toggle() { root.toggleThemePicker() }
+    }
+
+    IpcHandler {
         target: "theme"
         function reload() { Theme.reload() }
     }
@@ -195,6 +211,13 @@ ShellRoot {
         id: overview
         visible: root.overviewVisible
         onRequestClose: root.overviewVisible = false
+    }
+
+    // Curated Theme Preset Picker Modal (ALT+T)
+    ThemePicker {
+        id: themePicker
+        visible: root.themePickerVisible
+        onRequestClose: root.themePickerVisible = false
     }
 
     // IPC handler for notifications

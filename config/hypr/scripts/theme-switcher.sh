@@ -18,6 +18,49 @@ SURFACE_MODE=$(cat "$SURFACE_CACHE" 2>/dev/null)
 [ -z "$SCHEME" ] && SCHEME="scheme-vibrant"
 [ -z "$SURFACE_MODE" ] && SURFACE_MODE="obsidian"
 
+# Handler for wallpaper-only change (--wall-only [path])
+if [[ "$1" == "--wall-only" || "$1" == "--wallpaper-only" ]]; then
+    if ! pgrep -x "awww-daemon" >/dev/null; then
+        awww-daemon &
+        sleep 0.5
+    fi
+    if [[ -n "$2" && -f "$2" ]]; then
+        WALL="$2"
+    else
+        WALL=$(find "$WALL_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | shuf -n 1)
+    fi
+    if [[ -n "$WALL" && -f "$WALL" ]]; then
+        echo "$WALL" > "$WALL_CACHE"
+        awww img "$WALL" --transition-type wipe --transition-step 90 --transition-fps 144 &
+        echo "Wallpaper updated (theme preserved): $(basename "$WALL")"
+    fi
+    exit 0
+fi
+
+# Handler for preset themes (--preset <name>)
+if [[ "$1" == "--preset" && -n "$2" ]]; then
+    PRESET_NAME="$2"
+    python3 "$ENGINE" --preset "$PRESET_NAME"
+    quickshell ipc call theme reload >/dev/null 2>&1 || true
+    hyprctl reload &
+    touch "$HOME/.config/ghostty/config" 2>/dev/null || true
+    echo "Preset theme applied: $PRESET_NAME"
+    exit 0
+fi
+
+# Handler to reapply dynamic wallpaper theme (--dynamic)
+if [[ "$1" == "--dynamic" ]]; then
+    if [[ -z "$WALL" || ! -f "$WALL" ]]; then
+        WALL=$(find "$WALL_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | head -n 1)
+    fi
+    python3 "$ENGINE" "$WALL" "$SCHEME" "$SURFACE_MODE"
+    quickshell ipc call theme reload >/dev/null 2>&1 || true
+    hyprctl reload &
+    touch "$HOME/.config/ghostty/config" 2>/dev/null || true
+    echo "Dynamic wallpaper theme applied: $(basename "$WALL")"
+    exit 0
+fi
+
 # Handler for surface style change (--surface <obsidian|material>)
 if [[ "$1" == "--surface" && -n "$2" ]]; then
     SURFACE_MODE="$2"
