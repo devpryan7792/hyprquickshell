@@ -30,16 +30,6 @@ hl.window_rule({
     float = true,
 })
 
--- Quake-Style Dropdown Terminal (SUPER + `)
-hl.window_rule({
-    name      = "dropdown-terminal",
-    match     = { initial_title = "^dropdown-terminal$" },
-    workspace = "special:dropdown",
-    float     = true,
-    size      = "75% 55%",
-    move      = "12.5% 2%",
-})
-
 -- Quickshell Layer Rules (Blur and Ignore Alpha)
 hl.layer_rule({
     name = "quickshell-blur",

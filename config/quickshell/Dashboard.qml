@@ -51,7 +51,7 @@ PanelWindow {
     property int hwDisk: 0
     property string hwDiskStr: "0G / 0G"
     property var topProcs: []
-    property bool showProcessList: false
+    property bool showProcessList: true
 
     // Active player accessor
     property var player: (Mpris.players && Mpris.players.values && Mpris.players.values.length > 0)
@@ -1354,21 +1354,36 @@ PanelWindow {
                             anchors.margins: 10
                             spacing: 6
 
-                            RowLayout {
+                            Rectangle {
                                 Layout.fillWidth: true
-                                Text {
-                                    text: "󰍛 System Telemetry"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.bold: true
-                                    font.pixelSize: 11
-                                    color: Theme.fg1
-                                    Layout.fillWidth: true
+                                height: 24
+                                radius: 4
+                                color: headerMouse.containsMouse ? Theme.bg2 : "transparent"
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 4
+                                    anchors.rightMargin: 4
+                                    Text {
+                                        text: "󰍛 System Telemetry & Processes"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+                                    Text {
+                                        text: dashboardWindow.showProcessList ? "󰅃 Hide Processes" : "󰅀 Show Processes"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        color: Theme.teal
+                                    }
                                 }
-                                Text {
-                                    text: dashboardWindow.showProcessList ? "󰅃 (collapse)" : "󰅀 (inspect memory)"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 9
-                                    color: dashboardWindow.showProcessList ? Theme.teal : Theme.silver
+                                MouseArea {
+                                    id: headerMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: dashboardWindow.showProcessList = !dashboardWindow.showProcessList
                                 }
                             }
 
@@ -1460,53 +1475,82 @@ PanelWindow {
 
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    Text { text: "Top Memory Consumers"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.teal; Layout.fillWidth: true }
-                                    Text { text: "Click 󰅖 to kill"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 8; color: Theme.silver }
+                                    Text { text: "Top Resource Consumers"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.teal; Layout.fillWidth: true }
+                                    Text { text: "Click Kill to terminate"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 8; color: Theme.silver }
                                 }
 
                                 Repeater {
                                     model: dashboardWindow.topProcs
                                     Rectangle {
                                         Layout.fillWidth: true
-                                        height: 24
-                                        radius: 4
-                                        color: pMouse.containsMouse ? Theme.bg2 : Theme.bg0
-                                        border.color: pMouse.containsMouse ? Theme.teal : Theme.bg3
+                                        height: 28
+                                        radius: 6
+                                        color: Theme.bg0
+                                        border.color: Theme.bg3
                                         border.width: 1
 
                                         RowLayout {
                                             anchors.fill: parent
-                                            anchors.leftMargin: 6
+                                            anchors.leftMargin: 8
                                             anchors.rightMargin: 6
                                             spacing: 6
 
                                             Text { text: String(index + 1) + "."; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.silver }
                                             Text { text: modelData.name; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.fg0; elide: Text.ElideRight; Layout.fillWidth: true }
+                                            Text { text: "PID " + modelData.pid; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 8; color: Theme.silver }
                                             Text { text: modelData.mem; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.teal }
 
                                             Rectangle {
-                                                width: 16
-                                                height: 16
-                                                radius: 3
+                                                id: killBtn
+                                                width: 46
+                                                height: 20
+                                                radius: 4
                                                 color: killMouse.containsMouse ? Theme.red : Theme.bg2
-                                                Text { anchors.centerIn: parent; text: "󰅖"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: killMouse.containsMouse ? Theme.bg0 : Theme.silver }
+                                                border.color: killMouse.containsMouse ? Theme.red : Theme.bg3
+                                                border.width: 1
+
+                                                RowLayout {
+                                                    anchors.centerIn: parent
+                                                    spacing: 3
+                                                    Text {
+                                                        text: "󰅖"
+                                                        font.family: "JetBrainsMono Nerd Font"
+                                                        font.pixelSize: 9
+                                                        color: killMouse.containsMouse ? Theme.bg0 : Theme.red
+                                                    }
+                                                    Text {
+                                                        text: "Kill"
+                                                        font.family: "JetBrainsMono Nerd Font"
+                                                        font.bold: true
+                                                        font.pixelSize: 9
+                                                        color: killMouse.containsMouse ? Theme.bg0 : Theme.fg1
+                                                    }
+                                                }
+
                                                 MouseArea {
                                                     id: killMouse
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     cursorShape: Qt.PointingHandCursor
                                                     onClicked: {
-                                                        dashboardWindow.runDetached("kill -9 " + String(modelData.pid))
+                                                        let targetPid = String(modelData.pid)
+                                                        let targetName = String(modelData.name)
+
+                                                        // Optimistically update list in 0ms
+                                                        let updated = []
+                                                        for (let i = 0; i < dashboardWindow.topProcs.length; i++) {
+                                                            if (String(dashboardWindow.topProcs[i].pid) !== targetPid) {
+                                                                updated.push(dashboardWindow.topProcs[i])
+                                                            }
+                                                        }
+                                                        dashboardWindow.topProcs = updated
+
+                                                        // Force terminate process
+                                                        dashboardWindow.runDetached("kill -9 " + targetPid + " && notify-send -a 'Process Monitor' -i 'process-stop' 'Process Terminated' 'Killed " + targetName + " (PID " + targetPid + ")'")
                                                         hwStatsProc.running = true
                                                     }
                                                 }
                                             }
-                                        }
-
-                                        MouseArea {
-                                            id: pMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
                                         }
                                     }
                                 }

@@ -8,7 +8,6 @@ local home = os.getenv("HOME")
 
 -- ── Applications ─────────────────────────────────────────────────────────────
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("ghostty"))
-hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/toggle-dropdown-terminal.sh"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("which brave >/dev/null 2>&1 && brave || (which brave-browser >/dev/null 2>&1 && brave-browser || firefox)"))
