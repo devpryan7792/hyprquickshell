@@ -59,3 +59,14 @@ hl.window_rule({
     border_size = 0,
 })
 
+-- Scratchpad Floating Terminal (Seamless, centered, auto-placed in special:scratchpad)
+hl.window_rule({
+    name = "scratchpad-term",
+    match = { initial_title = "^Scratchpad$" },
+    workspace = "special:scratchpad",
+    float = true,
+    size = "960 580",
+    center = true,
+    border_size = 0,
+})
+

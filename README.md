@@ -89,7 +89,8 @@
 | `SUPER + F4` | Close / Kill Active Window |
 | `SUPER + T` | Toggle Window Floating |
 | `SUPER + F` | Toggle Fullscreen |
-| `SUPER + S` | Toggle Scratchpad / Special Workspace |
+| `SUPER + \`` / `SUPER + U` | **Toggle Seamless Scratchpad Floating Terminal** |
+| `SUPER + S` | Toggle Magic Special Workspace |
 | `SUPER + [1-9]` | Switch to Workspace 1-9 |
 | `SUPER + SHIFT + [1-9]` | Move Window to Workspace 1-9 |
 | `SUPER + ALT + Arrows/Vim` | Resize Active Window |

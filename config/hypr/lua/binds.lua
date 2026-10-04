@@ -121,6 +121,9 @@ end
 -- Special workspace (scratchpad)
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + CTRL + S",  hl.dsp.window.move({ workspace = "special:magic" }))
+-- Seamless Floating Scratchpad Terminal (SUPER + ` or SUPER + U)
+hl.bind(mainMod .. " + grave",     hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/scratchpad-term.sh"))
+hl.bind(mainMod .. " + U",         hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/scratchpad-term.sh"))
 
 -- Scroll through existing workspaces with SUPER + scroll
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))

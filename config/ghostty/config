@@ -1,5 +1,5 @@
 # Ghostty Terminal Configuration
-theme = ~/.config/ghostty/theme
+theme = /home/pryan/.config/ghostty/theme
 font-family = JetBrainsMono Nerd Font
 font-size = 12
 window-padding-x = 12
@@ -11,4 +11,5 @@ cursor-style = block
 cursor-style-blink = true
 cursor-click-to-move = true
 shell-integration = detect
-command = sh -c "if command -v zsh >/dev/null 2>&1; then exec zsh; else exec bash; fi"
+# command = /usr/bin/zsh
+linux-cgroup = never
