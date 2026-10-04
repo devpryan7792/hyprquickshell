@@ -13,6 +13,7 @@ ShellRoot {
     property bool settingsVisible: false
     property bool overviewVisible: false
     property bool themePickerVisible: false
+    property bool cheatsheetVisible: false
 
     function closeAll() {
         dashboardVisible = false
@@ -23,6 +24,16 @@ ShellRoot {
         settingsVisible = false
         overviewVisible = false
         themePickerVisible = false
+        cheatsheetVisible = false
+    }
+
+    function toggleCheatsheet() {
+        if (cheatsheetVisible) {
+            cheatsheetVisible = false
+        } else {
+            closeAll()
+            cheatsheetVisible = true
+        }
     }
 
     function toggleSettings() {
@@ -154,6 +165,11 @@ ShellRoot {
     }
 
     IpcHandler {
+        target: "cheatsheet"
+        function toggle() { root.toggleCheatsheet() }
+    }
+
+    IpcHandler {
         target: "theme"
         function reload() { Theme.reload() }
     }
@@ -221,6 +237,13 @@ ShellRoot {
         id: themePicker
         visible: root.themePickerVisible
         onRequestClose: root.themePickerVisible = false
+    }
+
+    // Keybindings Cheatsheet Modal (SUPER+/)
+    Cheatsheet {
+        id: cheatsheet
+        visible: root.cheatsheetVisible
+        onRequestClose: root.cheatsheetVisible = false
     }
 
     // IPC handler for notifications

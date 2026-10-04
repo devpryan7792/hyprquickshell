@@ -35,6 +35,10 @@ hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("quickshell ipc call wallpape
 -- ALT + T: Curated Theme Preset Studio (Catppuccin, Tokyo Night, Gruvbox, etc.)
 hl.bind("ALT + T",                 hl.dsp.exec_cmd("quickshell ipc call theme_picker toggle"))
 
+-- Keybindings Cheatsheet (SUPER + /)
+hl.bind(mainMod .. " + slash",    hl.dsp.exec_cmd("quickshell ipc call cheatsheet toggle"))
+hl.bind(mainMod .. " + question", hl.dsp.exec_cmd("quickshell ipc call cheatsheet toggle"))
+
 -- Control Center / Dashboard Side Panel
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("quickshell ipc call dashboard toggle"))
 
