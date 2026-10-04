@@ -67,10 +67,24 @@ PanelWindow {
         onExited: Theme.reload()
     }
 
+    property bool wallOnlyMode: false
+
     function selectWallpaper(path) {
         wallpaperPickerWindow.close()
-        wallSetter.command = [Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh", path]
+        let home = Quickshell.env("HOME")
+        if (wallpaperPickerWindow.wallOnlyMode) {
+            wallSetter.command = [home + "/.config/hypr/scripts/theme-switcher.sh", "--wall-only", path]
+        } else {
+            wallSetter.command = [home + "/.config/hypr/scripts/theme-switcher.sh", path]
+        }
         wallSetter.running = true
+    }
+
+    function selectRandom() {
+        if (wallpaperPickerWindow.filteredWallpapers.length > 0) {
+            let r = Math.floor(Math.random() * wallpaperPickerWindow.filteredWallpapers.length)
+            selectWallpaper(wallpaperPickerWindow.filteredWallpapers[r])
+        }
     }
 
     Timer {
@@ -118,17 +132,102 @@ PanelWindow {
             // Header
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: 10
 
                 Text {
-                    text: "󰸉  Wallpaper & Dynamic Palette Engine"
+                    text: wallpaperPickerWindow.wallOnlyMode ? "󰸉  Wallpaper Selector (Theme Preserved)" : "󰸉  Wallpaper & Dynamic Rice (Full Sync)"
                     font.family: "JetBrainsMono Nerd Font"
                     font.bold: true
-                    font.pixelSize: 14
+                    font.pixelSize: 13
                     color: Theme.fg0
                 }
 
+                // Mode Switcher Pill
+                Rectangle {
+                    height: 28
+                    radius: 6
+                    color: Theme.bg1
+                    border.color: Theme.bg3
+                    border.width: 1
+
+                    Row {
+                        spacing: 2
+                        anchors.centerIn: parent
+
+                        Rectangle {
+                            width: 82
+                            height: 22
+                            radius: 4
+                            color: !wallpaperPickerWindow.wallOnlyMode ? Theme.accent : "transparent"
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Full Sync"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.bold: true
+                                font.pixelSize: 10
+                                color: !wallpaperPickerWindow.wallOnlyMode ? Theme.bg0 : Theme.silver
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: wallpaperPickerWindow.wallOnlyMode = false
+                            }
+                        }
+
+                        Rectangle {
+                            width: 82
+                            height: 22
+                            radius: 4
+                            color: wallpaperPickerWindow.wallOnlyMode ? Theme.accent : "transparent"
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Wall Only"
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.bold: true
+                                font.pixelSize: 10
+                                color: wallpaperPickerWindow.wallOnlyMode ? Theme.bg0 : Theme.silver
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: wallpaperPickerWindow.wallOnlyMode = true
+                            }
+                        }
+                    }
+                }
+
                 Item { Layout.fillWidth: true }
+
+                // Random Wallpaper Button
+                Rectangle {
+                    width: 86
+                    height: 34
+                    radius: 6
+                    color: randMouse.containsMouse ? Theme.bg2 : Theme.bg1
+                    border.color: Theme.bg3
+                    border.width: 1
+
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 5
+                        Text { text: "🎲"; font.pixelSize: 11 }
+                        Text {
+                            text: "Random"
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 10
+                            font.bold: true
+                            color: Theme.fg1
+                        }
+                    }
+
+                    MouseArea {
+                        id: randMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: wallpaperPickerWindow.selectRandom()
+                    }
+                }
 
                 // Search Box
                 Rectangle {

@@ -90,11 +90,13 @@ ShellRoot {
         }
     }
 
-    function toggleWallpaperPicker() {
-        if (wallpaperPickerVisible) {
+    function toggleWallpaperPicker(wallOnly) {
+        let isWallOnly = (wallOnly === true)
+        if (wallpaperPickerVisible && wallpaperPicker.wallOnlyMode === isWallOnly) {
             wallpaperPickerVisible = false
         } else {
             closeAll()
+            wallpaperPicker.wallOnlyMode = isWallOnly
             wallpaperPickerVisible = true
         }
     }
@@ -122,7 +124,8 @@ ShellRoot {
 
     IpcHandler {
         target: "wallpaper"
-        function toggle() { root.toggleWallpaperPicker() }
+        function toggle() { root.toggleWallpaperPicker(false) }
+        function wallOnly() { root.toggleWallpaperPicker(true) }
     }
 
     IpcHandler {

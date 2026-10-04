@@ -26,12 +26,12 @@ hl.bind("ALT + TAB",         hl.dsp.exec_cmd("quickshell ipc call overview toggl
 -- System & Desktop Hub (SUPER+,)
 hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("quickshell ipc call settings toggle"))
 
--- Wallpaper & Theming Decoupled
--- SUPER + W: Full Synchronized Rice (Wallpaper + Material You Theme)
-hl.bind(mainMod .. " + W",         hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/theme-switcher.sh"))
--- SUPER + SHIFT + W: Wallpaper Only (Keeps active theme intact)
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/theme-switcher.sh --wall-only"))
--- ALT + T: Curated Theme Preset Picker (Catppuccin, Tokyo Night, Gruvbox, etc.)
+-- Wallpaper & Theming Decoupled (Visual Picker Modals)
+-- SUPER + W: Wallpaper & Dynamic Rice Menu (Full Sync)
+hl.bind(mainMod .. " + W",         hl.dsp.exec_cmd("quickshell ipc call wallpaper toggle"))
+-- SUPER + SHIFT + W: Wallpaper Menu Only (Preserve Active Theme)
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("quickshell ipc call wallpaper wallOnly"))
+-- ALT + T: Curated Theme Preset Studio (Catppuccin, Tokyo Night, Gruvbox, etc.)
 hl.bind("ALT + T",                 hl.dsp.exec_cmd("quickshell ipc call theme_picker toggle"))
 
 -- Control Center / Dashboard Side Panel
