@@ -145,75 +145,54 @@ PanelWindow {
         return res
     }
 
-    // Main Card Modal Container
+    // Main Card Modal Container (Sleek, Compact, Non-book-like)
     Rectangle {
         id: mainCard
-        width: 760
-        height: 620
+        width: 480
+        height: 480
         anchors.centerIn: parent
-        radius: 16
-        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.97)
-        border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.35)
-        border.width: 1
+        radius: 12
+        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)
+        border.color: Theme.accent
+        border.width: 2
         clip: true
 
         opacity: cheatsheetWindow.visible ? 1.0 : 0.0
         scale: cheatsheetWindow.visible ? 1.0 : 0.96
-        Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 20
-            spacing: 14
+            anchors.margins: 14
+            spacing: 10
 
             // Header Section: Title & Close Button
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: 8
 
-                Rectangle {
-                    width: 38
-                    height: 38
-                    radius: 10
-                    color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
-                    border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3)
-                    border.width: 1
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "󰌌"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 20
-                        color: Theme.accent
-                    }
+                Text {
+                    text: "󰌌"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 15
+                    color: Theme.accent
                 }
 
-                ColumnLayout {
-                    spacing: 2
-                    Layout.fillWidth: true
-
-                    Text {
-                        text: "Keybindings Cheatsheet"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 17
-                        font.bold: true
-                        color: Theme.fg0
-                    }
-
-                    Text {
-                        text: "Hyprland & Quickshell Shortcuts • Press ESC or SUPER + / to dismiss"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 11
-                        color: Theme.gray
-                    }
+                Text {
+                    text: "Shortcuts Cheatsheet"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    font.bold: true
+                    color: Theme.fg0
                 }
 
-                // Close Button
+                Item { Layout.fillWidth: true }
+
                 Rectangle {
-                    width: 32
-                    height: 32
-                    radius: 8
+                    width: 24
+                    height: 24
+                    radius: 6
                     color: closeArea.containsMouse ? Theme.bg2 : "transparent"
                     border.color: closeArea.containsMouse ? Theme.bg3 : "transparent"
                     border.width: 1
@@ -222,7 +201,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: "󰅖"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 14
+                        font.pixelSize: 12
                         color: closeArea.containsMouse ? Theme.red : Theme.gray
                     }
 
@@ -239,22 +218,22 @@ PanelWindow {
             // Search Filter Bar
             Rectangle {
                 Layout.fillWidth: true
-                height: 42
-                radius: 10
+                height: 36
+                radius: 8
                 color: Theme.bg1
                 border.color: searchField.activeFocus ? Theme.accent : Theme.bg3
                 border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 10
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    spacing: 8
 
                     Text {
                         text: "󰍉"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 15
+                        font.pixelSize: 13
                         color: searchField.activeFocus ? Theme.accent : Theme.gray
                     }
 
@@ -263,14 +242,14 @@ PanelWindow {
                         Layout.fillWidth: true
                         color: Theme.fg0
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 13
+                        font.pixelSize: 11
                         selectByMouse: true
                         clip: true
 
                         Text {
-                            text: "Type to filter shortcuts (e.g. terminal, screenshot, workspace, split)..."
+                            text: "Search shortcuts..."
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
+                            font.pixelSize: 11
                             color: Theme.gray
                             visible: !searchField.text && !searchField.activeFocus
                             anchors.verticalCenter: parent.verticalCenter
@@ -287,11 +266,10 @@ PanelWindow {
                         }
                     }
 
-                    // Clear button
                     Text {
                         text: "󰅖"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 13
+                        font.pixelSize: 11
                         color: clearArea.containsMouse ? Theme.fg0 : Theme.gray
                         visible: searchField.text.length > 0
 
@@ -312,45 +290,33 @@ PanelWindow {
             // Category Filter Pills
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: 5
 
                 Repeater {
                     model: [
-                        { id: "all", label: "All", icon: "󰒺" },
-                        { id: "apps", label: "Apps", icon: "󰀻" },
-                        { id: "theme", label: "Theming", icon: "󰏘" },
-                        { id: "windows", label: "Windows", icon: "󱂬" },
-                        { id: "workspaces", label: "Workspaces", icon: "󰍹" },
-                        { id: "system", label: "System", icon: "󰒓" }
+                        { id: "all", label: "All" },
+                        { id: "apps", label: "Apps" },
+                        { id: "theme", label: "Theme" },
+                        { id: "windows", label: "Win" },
+                        { id: "workspaces", label: "Work" },
+                        { id: "system", label: "Sys" }
                     ]
 
                     Rectangle {
-                        height: 28
-                        implicitWidth: catRow.implicitWidth + 16
-                        radius: 7
+                        height: 24
+                        Layout.fillWidth: true
+                        radius: 6
                         color: cheatsheetWindow.currentCategory === modelData.id ? Theme.accent : Theme.bg1
                         border.color: cheatsheetWindow.currentCategory === modelData.id ? Theme.accent : Theme.bg2
                         border.width: 1
 
-                        Row {
-                            id: catRow
+                        Text {
                             anchors.centerIn: parent
-                            spacing: 5
-
-                            Text {
-                                text: modelData.icon
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
-                                color: cheatsheetWindow.currentCategory === modelData.id ? Theme.bg0 : Theme.fg2
-                            }
-
-                            Text {
-                                text: modelData.label
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 11
-                                font.bold: cheatsheetWindow.currentCategory === modelData.id
-                                color: cheatsheetWindow.currentCategory === modelData.id ? Theme.bg0 : Theme.fg1
-                            }
+                            text: modelData.label
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 10
+                            font.bold: cheatsheetWindow.currentCategory === modelData.id
+                            color: cheatsheetWindow.currentCategory === modelData.id ? Theme.bg0 : Theme.fg1
                         }
 
                         MouseArea {
@@ -362,11 +328,11 @@ PanelWindow {
                 }
             }
 
-            // Shortcuts List View
+            // Shortcuts List View (Compact Single-line)
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                radius: 12
+                radius: 8
                 color: Theme.bg1
                 border.color: Qt.rgba(Theme.bg3.r, Theme.bg3.g, Theme.bg3.b, 0.6)
                 border.width: 1
@@ -375,8 +341,8 @@ PanelWindow {
                 ListView {
                     id: shortcutList
                     anchors.fill: parent
-                    anchors.margins: 6
-                    spacing: 4
+                    anchors.margins: 4
+                    spacing: 2
                     model: cheatsheetWindow.filteredShortcuts
                     boundsBehavior: Flickable.StopAtBounds
 
@@ -388,17 +354,17 @@ PanelWindow {
                     // Empty State
                     Text {
                         anchors.centerIn: parent
-                        text: "No shortcuts found matching \"" + cheatsheetWindow.searchQuery + "\""
+                        text: "No shortcuts found"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 13
+                        font.pixelSize: 11
                         color: Theme.gray
                         visible: shortcutList.count === 0
                     }
 
                     delegate: Rectangle {
                         width: shortcutList.width
-                        height: 48
-                        radius: 8
+                        height: 32
+                        radius: 6
                         color: itemArea.containsMouse ? Theme.bg2 : "transparent"
                         border.color: itemArea.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : "transparent"
                         border.width: 1
@@ -411,63 +377,38 @@ PanelWindow {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                            spacing: 8
 
-                            // Leading Icon
-                            Rectangle {
-                                width: 28
-                                height: 28
-                                radius: 7
-                                color: Theme.bg0
-                                border.color: Theme.bg3
-                                border.width: 1
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.icon
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 13
-                                    color: Theme.accent
-                                }
+                            Text {
+                                text: modelData.icon
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                color: Theme.accent
                             }
 
-                            // Description & Detail
-                            ColumnLayout {
+                            Text {
+                                text: modelData.desc
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 11
+                                color: itemArea.containsMouse ? Theme.fg0 : Theme.fg1
+                                elide: Text.ElideRight
                                 Layout.fillWidth: true
-                                spacing: 2
-
-                                Text {
-                                    text: modelData.desc
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                    color: Theme.fg0
-                                }
-
-                                Text {
-                                    text: modelData.detail
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 10
-                                    color: Theme.gray
-                                    elide: Text.ElideRight
-                                    Layout.fillWidth: true
-                                }
                             }
 
                             // Key Badges Row
                             Row {
-                                spacing: 4
+                                spacing: 3
                                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                                 Repeater {
                                     model: modelData.keys
 
                                     Rectangle {
-                                        height: 24
-                                        implicitWidth: keyText.implicitWidth + 12
-                                        radius: 5
+                                        height: 20
+                                        implicitWidth: keyText.implicitWidth + 8
+                                        radius: 4
                                         color: Theme.bg0
                                         border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3)
                                         border.width: 1
@@ -477,7 +418,7 @@ PanelWindow {
                                             anchors.centerIn: parent
                                             text: modelData
                                             font.family: "JetBrainsMono Nerd Font"
-                                            font.pixelSize: 10
+                                            font.pixelSize: 9
                                             font.bold: true
                                             color: Theme.accent
                                         }
@@ -492,24 +433,25 @@ PanelWindow {
             // Footer bar
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 8
 
                 Text {
-                    text: cheatsheetWindow.filteredShortcuts.length + " shortcuts available"
+                    text: cheatsheetWindow.filteredShortcuts.length + " shortcuts"
                     font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 10
+                    font.pixelSize: 9
                     color: Theme.gray
                 }
 
                 Item { Layout.fillWidth: true }
 
                 Text {
-                    text: "Tip: Press SUPER + / anytime to open or close"
+                    text: "ESC to close"
                     font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 10
-                    color: Theme.accent
+                    font.pixelSize: 9
+                    color: Theme.gray
                 }
             }
         }
     }
 }
+

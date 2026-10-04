@@ -196,13 +196,13 @@ PanelWindow {
     // Central Spotlight Window
     Rectangle {
         id: card
-        width: 620
-        height: 540
+        width: 520
+        height: 440
         anchors.centerIn: parent
-        radius: 8
-        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.96)
+        radius: 12
+        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)
         border.color: Theme.accent
-        border.width: 1
+        border.width: 2
         clip: true
 
         opacity: launcherWindow.visible ? 1.0 : 0.0
@@ -290,10 +290,10 @@ PanelWindow {
 
                 Text {
                     text: launcherWindow.currentMode === "apps"
-                          ? (launcherWindow.filteredApps.length + " apps available")
-                          : (launcherWindow.filteredClips.length + " clips saved")
+                          ? (launcherWindow.filteredApps.length + " apps")
+                          : (launcherWindow.filteredClips.length + " clips")
                     font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 11
+                    font.pixelSize: 10
                     color: Theme.gray
                 }
             }
@@ -530,6 +530,9 @@ PanelWindow {
                             Layout.alignment: Qt.AlignVCenter
 
                             Image {
+                                sourceSize.width: 64
+                                sourceSize.height: 64
+                                asynchronous: true
                                 id: appImg
                                 anchors.fill: parent
                                 source: (modelData.iconPath && modelData.iconPath.length > 0) ? ("file://" + modelData.iconPath) : ""
@@ -652,17 +655,17 @@ PanelWindow {
                 Layout.fillWidth: true
                 Text {
                     text: launcherWindow.currentMode === "apps"
-                          ? "󰌌  ↑↓/Tab nav • ↵ launch • =math • >cmd • ; clip • Esc exit"
-                          : "󰌌  ↑↓/Tab nav • ↵ copy → Ctrl+V or middle-click • Esc exit"
+                          ? "↑↓ nav • ↵ launch • Esc exit"
+                          : "↑↓ nav • ↵ copy • Esc exit"
                     font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 10
+                    font.pixelSize: 9
                     color: Theme.gray
                 }
                 Item { Layout.fillWidth: true }
                 Text {
-                    text: launcherWindow.currentMode === "apps" ? "Frecency & Prefix scoring" : "Cliphist persistent history"
+                    text: launcherWindow.currentMode === "apps" ? "Frecency ranking" : "Cliphist"
                     font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 10
+                    font.pixelSize: 9
                     color: Theme.silver
                 }
             }
