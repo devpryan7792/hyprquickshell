@@ -59,12 +59,6 @@ PanelWindow {
         }
     }
 
-    // Escape key handler
-    Item {
-        anchors.fill: parent
-        focus: cheatsheetWindow.visible
-        Keys.onEscapePressed: cheatsheetWindow.close()
-    }
 
     // Complete Keybindings Database
     readonly property var allShortcuts: [
