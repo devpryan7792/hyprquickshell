@@ -41,12 +41,6 @@ PanelWindow {
         }
     }
 
-    onVisibleChanged: {
-        if (visible) {
-            readPresetProc.running = true
-        }
-    }
-
     // Process to apply preset
     Process {
         id: applyProc
@@ -66,11 +60,19 @@ PanelWindow {
         applyProc.running = true
     }
 
-    // Escape key handler
-    Item {
-        anchors.fill: parent
-        focus: themePickerWindow.visible
-        Keys.onEscapePressed: themePickerWindow.close()
+    onVisibleChanged: {
+        if (visible) {
+            readPresetProc.running = true
+            Qt.callLater(() => {
+                for (let i = 0; i < themeList.model.length; i++) {
+                    if (themeList.model[i].id === activePreset) {
+                        themeList.currentIndex = i
+                        break
+                    }
+                }
+                themeList.forceActiveFocus()
+            })
+        }
     }
 
     // Dimmed backdrop (click to close)
@@ -93,7 +95,7 @@ PanelWindow {
         id: mainCard
         anchors.centerIn: parent
         width: 440
-        height: 440
+        height: 680
         radius: 12
         color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)
         border.color: Theme.accent
@@ -179,11 +181,27 @@ PanelWindow {
                     anchors.margins: 4
                     spacing: 2
                     boundsBehavior: Flickable.StopAtBounds
+                    focus: true
+                    highlightFollowsCurrentItem: true
 
                     ScrollBar.vertical: ScrollBar {
                         active: true
                         policy: ScrollBar.AsNeeded
                     }
+
+                    Keys.onDownPressed: themeList.incrementCurrentIndex()
+                    Keys.onUpPressed: themeList.decrementCurrentIndex()
+                    Keys.onReturnPressed: {
+                        if (currentIndex >= 0 && currentIndex < model.length) {
+                            themePickerWindow.selectTheme(model[currentIndex].id)
+                        }
+                    }
+                    Keys.onEnterPressed: {
+                        if (currentIndex >= 0 && currentIndex < model.length) {
+                            themePickerWindow.selectTheme(model[currentIndex].id)
+                        }
+                    }
+                    Keys.onEscapePressed: themePickerWindow.close()
 
                     model: [
                         {
@@ -263,9 +281,10 @@ PanelWindow {
                         height: 36
                         radius: 6
                         readonly property bool isActive: themePickerWindow.activePreset === modelData.id
-                        color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (cardMouse.containsMouse ? Theme.bg2 : "transparent")
-                        border.color: isActive ? Theme.accent : (cardMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3) : "transparent")
-                        border.width: 1
+                        readonly property bool isSelected: themeList.currentIndex === index
+                        color: isSelected ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22) : (isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.12) : (cardMouse.containsMouse ? Theme.bg2 : "transparent"))
+                        border.color: isSelected ? Theme.accent : (isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.5) : (cardMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3) : "transparent"))
+                        border.width: isSelected || isActive ? 1.5 : 1
 
                         RowLayout {
                             anchors.fill: parent
@@ -283,9 +302,9 @@ PanelWindow {
                             Text {
                                 text: modelData.name
                                 font.family: "JetBrainsMono Nerd Font"
-                                font.bold: parent.parent.isActive
+                                font.bold: parent.parent.isSelected || parent.parent.isActive
                                 font.pixelSize: 11
-                                color: parent.parent.isActive ? Theme.accent : (cardMouse.containsMouse ? Theme.fg0 : Theme.fg1)
+                                color: parent.parent.isSelected ? Theme.fg0 : (parent.parent.isActive ? Theme.accent : (cardMouse.containsMouse ? Theme.fg0 : Theme.fg1))
                                 Layout.fillWidth: true
                             }
 
@@ -322,6 +341,7 @@ PanelWindow {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
+                            onEntered: themeList.currentIndex = index
                             onClicked: themePickerWindow.selectTheme(modelData.id)
                         }
                     }
@@ -334,7 +354,7 @@ PanelWindow {
                 spacing: 8
 
                 Text {
-                    text: "ALT + T"
+                    text: "↑ / ↓ to navigate • ENTER to apply"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 9
                     color: Theme.silver

@@ -149,7 +149,7 @@ PanelWindow {
     Rectangle {
         id: mainCard
         width: 480
-        height: 480
+        height: 620
         anchors.centerIn: parent
         radius: 12
         color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)
@@ -255,7 +255,33 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        onTextChanged: cheatsheetWindow.searchQuery = text
+                        onTextChanged: {
+                            cheatsheetWindow.searchQuery = text
+                            if (shortcutList) shortcutList.currentIndex = 0
+                        }
+
+                        Keys.onDownPressed: {
+                            if (shortcutList.count > 0) {
+                                shortcutList.incrementCurrentIndex()
+                                shortcutList.positionViewAtIndex(shortcutList.currentIndex, ListView.Contain)
+                            }
+                        }
+                        Keys.onUpPressed: {
+                            if (shortcutList.count > 0) {
+                                shortcutList.decrementCurrentIndex()
+                                shortcutList.positionViewAtIndex(shortcutList.currentIndex, ListView.Contain)
+                            }
+                        }
+                        Keys.onTabPressed: {
+                            let cats = ["all", "apps", "theme", "windows", "workspaces", "system"]
+                            let idx = cats.indexOf(cheatsheetWindow.currentCategory)
+                            cheatsheetWindow.currentCategory = cats[(idx + 1) % cats.length]
+                        }
+                        Keys.onBacktabPressed: {
+                            let cats = ["all", "apps", "theme", "windows", "workspaces", "system"]
+                            let idx = cats.indexOf(cheatsheetWindow.currentCategory)
+                            cheatsheetWindow.currentCategory = cats[(idx - 1 + cats.length) % cats.length]
+                        }
 
                         Keys.onEscapePressed: {
                             if (text.length > 0) {
@@ -345,6 +371,8 @@ PanelWindow {
                     spacing: 2
                     model: cheatsheetWindow.filteredShortcuts
                     boundsBehavior: Flickable.StopAtBounds
+                    highlightFollowsCurrentItem: true
+                    currentIndex: 0
 
                     ScrollBar.vertical: ScrollBar {
                         active: true
@@ -365,14 +393,18 @@ PanelWindow {
                         width: shortcutList.width
                         height: 32
                         radius: 6
-                        color: itemArea.containsMouse ? Theme.bg2 : "transparent"
-                        border.color: itemArea.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : "transparent"
-                        border.width: 1
+                        readonly property bool isSelected: shortcutList.currentIndex === index
+                        color: isSelected ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22) : (itemArea.containsMouse ? Theme.bg2 : "transparent")
+                        border.color: isSelected ? Theme.accent : (itemArea.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : "transparent")
+                        border.width: isSelected ? 1.5 : 1
 
                         MouseArea {
                             id: itemArea
                             anchors.fill: parent
                             hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: shortcutList.currentIndex = index
+                            onClicked: shortcutList.currentIndex = index
                         }
 
                         RowLayout {
@@ -392,7 +424,8 @@ PanelWindow {
                                 text: modelData.desc
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 11
-                                color: itemArea.containsMouse ? Theme.fg0 : Theme.fg1
+                                font.bold: parent.parent.isSelected
+                                color: parent.parent.isSelected ? Theme.fg0 : (itemArea.containsMouse ? Theme.fg0 : Theme.fg1)
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -409,8 +442,8 @@ PanelWindow {
                                         height: 20
                                         implicitWidth: keyText.implicitWidth + 8
                                         radius: 4
-                                        color: Theme.bg0
-                                        border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3)
+                                        color: parent.parent.parent.parent.isSelected ? Theme.bg1 : Theme.bg0
+                                        border.color: parent.parent.parent.parent.isSelected ? Theme.accent : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3)
                                         border.width: 1
 
                                         Text {
@@ -436,7 +469,7 @@ PanelWindow {
                 spacing: 8
 
                 Text {
-                    text: cheatsheetWindow.filteredShortcuts.length + " shortcuts"
+                    text: "↑ / ↓ navigate • TAB category"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 9
                     color: Theme.gray

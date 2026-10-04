@@ -25,7 +25,7 @@ PanelWindow {
         settingsWindow.requestClose()
     }
 
-    // Tab state: 0 = Aesthetics & Physics, 1 = Processes & Tasks
+    // Tab state: 0 = Rice Studio, 1 = Processes & Telemetry
     property int currentTab: 0
 
     function setTab(idx) {
@@ -36,12 +36,44 @@ PanelWindow {
     }
 
     // Live tuning state (initialized with rice defaults)
-    property int gapsIn: 3
+    // Gaps Out (Window Margins to screen edges)
     property int gapsOut: 6
+    property bool perSideGapsOut: false
+    property int gapsOutTop: 6
+    property int gapsOutRight: 6
+    property int gapsOutBottom: 6
+    property int gapsOutLeft: 6
+
+    // Gaps In (Window Padding / Gaps between windows)
+    property int gapsIn: 3
+    property bool perSideGapsIn: false
+    property int gapsInTop: 3
+    property int gapsInRight: 3
+    property int gapsInBottom: 3
+    property int gapsInLeft: 3
+
+    // Geometry & Borders
     property int rounding: 6
     property int borderSize: 1
+
+    // Effects, Blur & Opacity
+    property bool blurEnabled: true
+    property int blurSize: 6
+    property int blurPasses: 2
+    property real activeOpacity: 1.0
+    property real inactiveOpacity: 0.95
+
+    // Animation & Surface
     property string animProfile: "smooth"
     property string activeSurface: "material"
+
+    // Collapsible accordion section toggles (start with Gaps open, rest collapsed)
+    property bool sectionMarginsOpen: true
+    property bool sectionPaddingOpen: false
+    property bool sectionGeometryOpen: false
+    property bool sectionEffectsOpen: false
+    property bool sectionAnimOpen: false
+    property bool sectionSurfaceOpen: false
 
     // Telemetry & Process state
     property int hwCpu: 0
@@ -117,16 +149,30 @@ PanelWindow {
         }
     }
 
-    // 30ms debounced live Hyprland evaluator
+    // Debounced live Hyprland evaluator
     Timer {
         id: liveEvalTimer
         interval: 30
         repeat: false
         onTriggered: {
-            let evalCode = "hl.config({ general = { gaps_in = " + settingsWindow.gapsIn +
-                           ", gaps_out = " + settingsWindow.gapsOut +
-                           ", border_size = " + settingsWindow.borderSize +
-                           " }, decoration = { rounding = " + settingsWindow.rounding + " } })"
+            let gapsOutVal = settingsWindow.perSideGapsOut
+                ? "{ top = " + settingsWindow.gapsOutTop + ", right = " + settingsWindow.gapsOutRight + ", bottom = " + settingsWindow.gapsOutBottom + ", left = " + settingsWindow.gapsOutLeft + " }"
+                : settingsWindow.gapsOut;
+
+            let gapsInVal = settingsWindow.perSideGapsIn
+                ? "{ top = " + settingsWindow.gapsInTop + ", right = " + settingsWindow.gapsInRight + ", bottom = " + settingsWindow.gapsInBottom + ", left = " + settingsWindow.gapsInLeft + " }"
+                : settingsWindow.gapsIn;
+
+            let evalCode = "hl.config({ general = { " +
+                           "gaps_in = " + gapsInVal + ", " +
+                           "gaps_out = " + gapsOutVal + ", " +
+                           "border_size = " + settingsWindow.borderSize + " }, " +
+                           "decoration = { " +
+                           "rounding = " + settingsWindow.rounding + ", " +
+                           "active_opacity = " + Number(settingsWindow.activeOpacity).toFixed(2) + ", " +
+                           "inactive_opacity = " + Number(settingsWindow.inactiveOpacity).toFixed(2) + ", " +
+                           "blur = { enabled = " + (settingsWindow.blurEnabled ? "true" : "false") + ", size = " + settingsWindow.blurSize + ", passes = " + settingsWindow.blurPasses + " } } })"
+
             runDetached("hyprctl eval \"" + evalCode + "\"")
         }
     }
@@ -151,8 +197,23 @@ PanelWindow {
     function resetDefaults() {
         settingsWindow.gapsIn = 3
         settingsWindow.gapsOut = 6
+        settingsWindow.perSideGapsOut = false
+        settingsWindow.gapsOutTop = 6
+        settingsWindow.gapsOutRight = 6
+        settingsWindow.gapsOutBottom = 6
+        settingsWindow.gapsOutLeft = 6
+        settingsWindow.perSideGapsIn = false
+        settingsWindow.gapsInTop = 3
+        settingsWindow.gapsInRight = 3
+        settingsWindow.gapsInBottom = 3
+        settingsWindow.gapsInLeft = 3
         settingsWindow.rounding = 6
-        settingsWindow.borderSize = 2
+        settingsWindow.borderSize = 1
+        settingsWindow.blurEnabled = true
+        settingsWindow.blurSize = 6
+        settingsWindow.blurPasses = 2
+        settingsWindow.activeOpacity = 1.0
+        settingsWindow.inactiveOpacity = 0.95
         setAnimProfile("smooth")
         liveEvalTimer.restart()
     }
@@ -170,7 +231,7 @@ PanelWindow {
         color: Qt.rgba(0, 0, 0, 0.6)
         opacity: settingsWindow.visible ? 1.0 : 0.0
         Behavior on opacity {
-            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
         }
 
         MouseArea {
@@ -179,39 +240,41 @@ PanelWindow {
         }
     }
 
-    // Main Studio Card Container
+    // Main Studio Card Modal Container (Sleek 500x680, 2px border, non-book-like)
     Rectangle {
+        id: mainCard
         anchors.centerIn: parent
-        width: 580
-        height: Math.min(680, cardLayout.implicitHeight + 40)
-        radius: 16
-        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.95)
-        border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3)
-        border.width: 1
+        width: 500
+        height: 680
+        radius: 12
+        color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)
+        border.color: Theme.accent
+        border.width: 2
+        clip: true
 
-        scale: settingsWindow.visible ? 1.0 : 0.94
+        scale: settingsWindow.visible ? 1.0 : 0.96
         opacity: settingsWindow.visible ? 1.0 : 0.0
         Behavior on scale {
-            NumberAnimation { duration: 240; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
         }
         Behavior on opacity {
-            NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
         }
 
         ColumnLayout {
             id: cardLayout
             anchors.fill: parent
-            anchors.margins: 20
-            spacing: 14
+            anchors.margins: 14
+            spacing: 10
 
-            // Header Row
+            // 1. Header Row
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: 10
 
                 Rectangle {
-                    width: 36
-                    height: 36
+                    width: 32
+                    height: 32
                     radius: 8
                     color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
                     border.color: Theme.accent
@@ -220,38 +283,39 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: settingsWindow.currentTab === 0 ? "󰒓" : "󰍛"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 18
+                        font.pixelSize: 16
                         color: Theme.accent
                     }
                 }
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 2
+                    spacing: 1
                     Text {
-                        text: "System & Desktop Hub"
+                        text: "Rice Studio"
                         font.family: "JetBrainsMono Nerd Font"
                         font.bold: true
-                        font.pixelSize: 14
+                        font.pixelSize: 13
                         color: Theme.fg0
                     }
                     Text {
-                        text: settingsWindow.currentTab === 0 ? "Real-time desktop aesthetic & physics tuning" : "Hardware telemetry & process management"
+                        text: settingsWindow.currentTab === 0 ? "Live CSS Margins, Blur, Corners & FX" : "Hardware telemetry & process management"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 10
+                        font.pixelSize: 9
                         color: Theme.silver
                     }
                 }
 
                 Rectangle {
-                    width: 28
-                    height: 28
-                    radius: 14
+                    width: 24
+                    height: 24
+                    radius: 6
                     color: closeMouse.containsMouse ? Theme.bg2 : "transparent"
                     border.color: closeMouse.containsMouse ? Theme.bg3 : "transparent"
+                    border.width: 1
                     Text {
                         anchors.centerIn: parent
-                        text: "✕"
+                        text: "󰅖"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         color: closeMouse.containsMouse ? Theme.red : Theme.silver
@@ -266,25 +330,25 @@ PanelWindow {
                 }
             }
 
-            // Segmented Tab Switcher
+            // 2. Segmented Tab Switcher
             Rectangle {
                 Layout.fillWidth: true
-                height: 36
-                radius: 8
+                height: 32
+                radius: 6
                 color: Theme.bg1
                 border.color: Theme.bg2
                 border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 3
+                    anchors.margins: 2
                     spacing: 4
 
-                    // Tab 0: Aesthetics & Physics
+                    // Tab 0: Rice Studio
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 6
+                        radius: 5
                         color: settingsWindow.currentTab === 0 ? Theme.accent : "transparent"
 
                         RowLayout {
@@ -293,14 +357,14 @@ PanelWindow {
                             Text {
                                 text: "󰒓"
                                 font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
+                                font.pixelSize: 11
                                 color: settingsWindow.currentTab === 0 ? Theme.bg0 : Theme.silver
                             }
                             Text {
-                                text: "Aesthetics & Physics"
+                                text: "Rice Studio"
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.bold: true
-                                font.pixelSize: 11
+                                font.pixelSize: 10
                                 color: settingsWindow.currentTab === 0 ? Theme.bg0 : Theme.fg1
                             }
                         }
@@ -312,11 +376,11 @@ PanelWindow {
                         }
                     }
 
-                    // Tab 1: Processes & Tasks
+                    // Tab 1: Telemetry & Tasks
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 6
+                        radius: 5
                         color: settingsWindow.currentTab === 1 ? Theme.accent : "transparent"
 
                         RowLayout {
@@ -325,14 +389,14 @@ PanelWindow {
                             Text {
                                 text: "󰍛"
                                 font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
+                                font.pixelSize: 11
                                 color: settingsWindow.currentTab === 1 ? Theme.bg0 : Theme.silver
                             }
                             Text {
-                                text: "Processes & Tasks"
+                                text: "System Tasks"
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.bold: true
-                                font.pixelSize: 11
+                                font.pixelSize: 10
                                 color: settingsWindow.currentTab === 1 ? Theme.bg0 : Theme.fg1
                             }
                         }
@@ -352,361 +416,1093 @@ PanelWindow {
                 color: Theme.bg2
             }
 
-            // ================= TAB 0: AESTHETICS & PHYSICS =================
-            ColumnLayout {
+            // ================= TAB 0: RICE STUDIO (SCROLLABLE ACCORDION) =================
+            ScrollView {
                 visible: settingsWindow.currentTab === 0
                 Layout.fillWidth: true
-                spacing: 14
+                Layout.fillHeight: true
+                clip: true
+                contentWidth: availableWidth
 
-                // SLIDERS SECTION
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-
-                    // Window Gaps In
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Text {
-                            text: "Inner Gaps"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            color: Theme.fg1
-                            Layout.preferredWidth: 100
-                        }
-                        Slider {
-                            Layout.fillWidth: true
-                            from: 0
-                            to: 20
-                            stepSize: 1
-                            value: settingsWindow.gapsIn
-                            onMoved: {
-                                settingsWindow.gapsIn = Math.round(value)
-                                liveEvalTimer.restart()
-                            }
-                        }
-                        Text {
-                            text: settingsWindow.gapsIn + " px"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            font.bold: true
-                            color: Theme.accent
-                            Layout.preferredWidth: 44
-                            horizontalAlignment: Text.AlignRight
-                        }
-                    }
-
-                    // Window Gaps Out
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Text {
-                            text: "Outer Gaps"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            color: Theme.fg1
-                            Layout.preferredWidth: 100
-                        }
-                        Slider {
-                            Layout.fillWidth: true
-                            from: 0
-                            to: 30
-                            stepSize: 1
-                            value: settingsWindow.gapsOut
-                            onMoved: {
-                                settingsWindow.gapsOut = Math.round(value)
-                                liveEvalTimer.restart()
-                            }
-                        }
-                        Text {
-                            text: settingsWindow.gapsOut + " px"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            font.bold: true
-                            color: Theme.accent
-                            Layout.preferredWidth: 44
-                            horizontalAlignment: Text.AlignRight
-                        }
-                    }
-
-                    // Corner Radius
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Text {
-                            text: "Corner Radius"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            color: Theme.fg1
-                            Layout.preferredWidth: 100
-                        }
-                        Slider {
-                            Layout.fillWidth: true
-                            from: 0
-                            to: 24
-                            stepSize: 1
-                            value: settingsWindow.rounding
-                            onMoved: {
-                                settingsWindow.rounding = Math.round(value)
-                                liveEvalTimer.restart()
-                            }
-                        }
-                        Text {
-                            text: settingsWindow.rounding + " px"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            font.bold: true
-                            color: Theme.accent
-                            Layout.preferredWidth: 44
-                            horizontalAlignment: Text.AlignRight
-                        }
-                    }
-
-                    // Border Width
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Text {
-                            text: "Border Width"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            color: Theme.fg1
-                            Layout.preferredWidth: 100
-                        }
-                        Slider {
-                            Layout.fillWidth: true
-                            from: 0
-                            to: 6
-                            stepSize: 1
-                            value: settingsWindow.borderSize
-                            onMoved: {
-                                settingsWindow.borderSize = Math.round(value)
-                                liveEvalTimer.restart()
-                            }
-                        }
-                        Text {
-                            text: settingsWindow.borderSize + " px"
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
-                            font.bold: true
-                            color: Theme.accent
-                            Layout.preferredWidth: 44
-                            horizontalAlignment: Text.AlignRight
-                        }
-                    }
+                ScrollBar.vertical: ScrollBar {
+                    active: true
+                    policy: ScrollBar.AsNeeded
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: Theme.bg2
-                }
-
-                // ANIMATION PROFILES
                 ColumnLayout {
-                    Layout.fillWidth: true
+                    width: parent.width
                     spacing: 8
 
-                    Text {
-                        text: "Animation Physics Profile"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.bold: true
-                        font.pixelSize: 11
-                        color: Theme.silver
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-
-                        Repeater {
-                            model: [
-                                { id: "instant", label: "Instant", icon: "󰓅", desc: "0ms / Max FPS" },
-                                { id: "snappy",  label: "Snappy",  icon: "󰁨", desc: "Fast & Sharp" },
-                                { id: "smooth",  label: "Smooth",  icon: "󰓅", desc: "Default Spring" },
-                                { id: "float",   label: "Float",   icon: "󰾕", desc: "Soft & Airy" }
-                            ]
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 38
-                                radius: 8
-                                readonly property bool isSelected: settingsWindow.animProfile === modelData.id
-                                color: isSelected ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.16) : Theme.bg1
-                                border.color: isSelected ? Theme.accent : (pMouse.containsMouse ? Theme.accent : Theme.bg2)
-                                border.width: isSelected ? 1.5 : 1
-
-                                RowLayout {
-                                    anchors.centerIn: parent
-                                    spacing: 6
-                                    Text {
-                                        text: modelData.icon
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 12
-                                        color: parent.parent.isSelected ? Theme.accent : Theme.silver
-                                    }
-                                    Text {
-                                        text: modelData.label
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.bold: true
-                                        font.pixelSize: 10
-                                        color: parent.parent.isSelected ? Theme.fg0 : Theme.fg1
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: pMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: settingsWindow.setAnimProfile(modelData.id)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // SURFACE STYLE SWITCHER
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Text {
-                        text: "Surface Glass & Tone"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.bold: true
-                        font.pixelSize: 11
-                        color: Theme.silver
-                    }
-
-                    // 4 Surface Tone Pills (Obsidian, AMOLED, Blood Red, Steel)
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 6
-
-                        Repeater {
-                            model: [
-                                { id: "obsidian", name: "Obsidian", icon: "󰌶" },
-                                { id: "amoled", name: "AMOLED 0%", icon: "🖤" },
-                                { id: "blood", name: "Blood Red", icon: "🩸" },
-                                { id: "steel", name: "Steel", icon: "⚔️" }
-                            ]
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 36
-                                radius: 8
-                                readonly property bool isActive: settingsWindow.activeSurface === modelData.id
-                                color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (surfMouse.containsMouse ? Theme.bg2 : Theme.bg1)
-                                border.color: isActive ? Theme.accent : (surfMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2)
-                                border.width: isActive ? 1.5 : 1
-
-                                RowLayout {
-                                    anchors.centerIn: parent
-                                    spacing: 5
-                                    Text {
-                                        text: modelData.icon
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 11
-                                        color: parent.parent.isActive ? Theme.accent : Theme.fg1
-                                    }
-                                    Text {
-                                        text: modelData.name
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.bold: true
-                                        font.pixelSize: 10
-                                        color: parent.parent.isActive ? Theme.accent : Theme.fg0
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: surfMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        settingsWindow.activeSurface = modelData.id
-                                        settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface " + modelData.id)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Bigger, prominent Material Tint banner button below
+                    // ---------------- SECTION 1: SCREEN MARGINS (OUTER GAPS) ----------------
                     Rectangle {
                         Layout.fillWidth: true
-                        height: 44
+                        implicitHeight: secMarginsCol.implicitHeight + 16
                         radius: 8
-                        readonly property bool isActive: settingsWindow.activeSurface === "material"
-                        color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (matMouse.containsMouse ? Theme.bg2 : Theme.bg1)
-                        border.color: isActive ? Theme.accent : (matMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2)
-                        border.width: isActive ? 1.5 : 1
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionMarginsOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
 
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 10
+                        ColumnLayout {
+                            id: secMarginsCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
 
-                            Rectangle {
-                                width: 26
-                                height: 26
-                                radius: 6
-                                color: parent.parent.isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : Theme.bg2
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "󰏘"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 13
-                                    color: Theme.accent
-                                }
-                            }
-
-                            ColumnLayout {
+                            // Header Clickable
+                            Item {
                                 Layout.fillWidth: true
-                                spacing: 1
-                                Text {
-                                    text: "Material Tint"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.bold: true
-                                    font.pixelSize: 11
-                                    color: parent.parent.parent.isActive ? Theme.accent : Theme.fg0
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "󰖲"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Screen Margins (Outer Gaps)"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: marginBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: marginBadgeText
+                                            anchors.centerIn: parent
+                                            text: settingsWindow.perSideGapsOut
+                                                  ? (settingsWindow.gapsOutTop + "T " + settingsWindow.gapsOutRight + "R " + settingsWindow.gapsOutBottom + "B " + settingsWindow.gapsOutLeft + "L")
+                                                  : (settingsWindow.gapsOut + " px")
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionMarginsOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
                                 }
-                                Text {
-                                    text: "Dynamic adaptive glass tone extracted from current wallpaper"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 9
-                                    color: Theme.silver
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionMarginsOpen = !settingsWindow.sectionMarginsOpen
                                 }
                             }
 
-                            Rectangle {
-                                visible: parent.parent.isActive
-                                height: 18
-                                radius: 9
-                                width: activeMatText.implicitWidth + 12
-                                color: Theme.accent
-                                Text {
-                                    id: activeMatText
-                                    anchors.centerIn: parent
-                                    text: "ACTIVE"
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 8
-                                    font.bold: true
-                                    color: Theme.bg0
+                            // Body
+                            ColumnLayout {
+                                visible: settingsWindow.sectionMarginsOpen
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                // Per-side toggle switch
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 26
+                                    radius: 6
+                                    color: settingsWindow.perSideGapsOut ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : Theme.bg2
+                                    border.color: settingsWindow.perSideGapsOut ? Theme.accent : Theme.bg3
+                                    border.width: 1
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        Text {
+                                            text: "Individual Sides (CSS: Top, Right, Bottom, Left)"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            color: settingsWindow.perSideGapsOut ? Theme.accent : Theme.silver
+                                            Layout.fillWidth: true
+                                        }
+                                        Text {
+                                            text: settingsWindow.perSideGapsOut ? "PER-SIDE ON" : "UNIFIED"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.bold: true
+                                            font.pixelSize: 8
+                                            color: settingsWindow.perSideGapsOut ? Theme.accent : Theme.silver
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            settingsWindow.perSideGapsOut = !settingsWindow.perSideGapsOut
+                                            if (settingsWindow.perSideGapsOut) {
+                                                settingsWindow.gapsOutTop = settingsWindow.gapsOut
+                                                settingsWindow.gapsOutRight = settingsWindow.gapsOut
+                                                settingsWindow.gapsOutBottom = settingsWindow.gapsOut
+                                                settingsWindow.gapsOutLeft = settingsWindow.gapsOut
+                                            }
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                }
+
+                                // Master outer gap slider (when unified)
+                                RowLayout {
+                                    visible: !settingsWindow.perSideGapsOut
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text {
+                                        text: "All Margins"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        color: Theme.fg1
+                                        Layout.preferredWidth: 90
+                                    }
+                                    Slider {
+                                        Layout.fillWidth: true
+                                        from: 0
+                                        to: 40
+                                        stepSize: 1
+                                        value: settingsWindow.gapsOut
+                                        onMoved: {
+                                            settingsWindow.gapsOut = Math.round(value)
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                    Text {
+                                        text: settingsWindow.gapsOut + " px"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.accent
+                                        Layout.preferredWidth: 40
+                                        horizontalAlignment: Text.AlignRight
+                                    }
+                                }
+
+                                // 4 Individual sliders (when per-side active)
+                                ColumnLayout {
+                                    visible: settingsWindow.perSideGapsOut
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    // Top Margin
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Margin Top"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 40; stepSize: 1; value: settingsWindow.gapsOutTop
+                                            onMoved: { settingsWindow.gapsOutTop = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsOutTop + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Right Margin
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Margin Right"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 40; stepSize: 1; value: settingsWindow.gapsOutRight
+                                            onMoved: { settingsWindow.gapsOutRight = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsOutRight + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Bottom Margin
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Margin Bottom"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 40; stepSize: 1; value: settingsWindow.gapsOutBottom
+                                            onMoved: { settingsWindow.gapsOutBottom = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsOutBottom + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Left Margin
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Margin Left"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 40; stepSize: 1; value: settingsWindow.gapsOutLeft
+                                            onMoved: { settingsWindow.gapsOutLeft = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsOutLeft + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
                                 }
                             }
                         }
+                    }
 
-                        MouseArea {
-                            id: matMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                settingsWindow.activeSurface = "material"
-                                settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface material")
+                    // ---------------- SECTION 2: WINDOW PADDING (INNER GAPS) ----------------
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: secPaddingCol.implicitHeight + 16
+                        radius: 8
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionPaddingOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: secPaddingCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
+
+                            // Header Clickable
+                            Item {
+                                Layout.fillWidth: true
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "󰝤"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Window Padding (Inner Gaps)"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: padBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: padBadgeText
+                                            anchors.centerIn: parent
+                                            text: settingsWindow.perSideGapsIn
+                                                  ? (settingsWindow.gapsInTop + "T " + settingsWindow.gapsInRight + "R " + settingsWindow.gapsInBottom + "B " + settingsWindow.gapsInLeft + "L")
+                                                  : (settingsWindow.gapsIn + " px")
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionPaddingOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionPaddingOpen = !settingsWindow.sectionPaddingOpen
+                                }
+                            }
+
+                            // Body
+                            ColumnLayout {
+                                visible: settingsWindow.sectionPaddingOpen
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                // Per-side toggle switch
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 26
+                                    radius: 6
+                                    color: settingsWindow.perSideGapsIn ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : Theme.bg2
+                                    border.color: settingsWindow.perSideGapsIn ? Theme.accent : Theme.bg3
+                                    border.width: 1
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        Text {
+                                            text: "Individual Sides (CSS: Top, Right, Bottom, Left)"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            color: settingsWindow.perSideGapsIn ? Theme.accent : Theme.silver
+                                            Layout.fillWidth: true
+                                        }
+                                        Text {
+                                            text: settingsWindow.perSideGapsIn ? "PER-SIDE ON" : "UNIFIED"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.bold: true
+                                            font.pixelSize: 8
+                                            color: settingsWindow.perSideGapsIn ? Theme.accent : Theme.silver
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            settingsWindow.perSideGapsIn = !settingsWindow.perSideGapsIn
+                                            if (settingsWindow.perSideGapsIn) {
+                                                settingsWindow.gapsInTop = settingsWindow.gapsIn
+                                                settingsWindow.gapsInRight = settingsWindow.gapsIn
+                                                settingsWindow.gapsInBottom = settingsWindow.gapsIn
+                                                settingsWindow.gapsInLeft = settingsWindow.gapsIn
+                                            }
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                }
+
+                                // Master inner gap slider (when unified)
+                                RowLayout {
+                                    visible: !settingsWindow.perSideGapsIn
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text {
+                                        text: "All Windows"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        color: Theme.fg1
+                                        Layout.preferredWidth: 90
+                                    }
+                                    Slider {
+                                        Layout.fillWidth: true
+                                        from: 0
+                                        to: 30
+                                        stepSize: 1
+                                        value: settingsWindow.gapsIn
+                                        onMoved: {
+                                            settingsWindow.gapsIn = Math.round(value)
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                    Text {
+                                        text: settingsWindow.gapsIn + " px"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.accent
+                                        Layout.preferredWidth: 40
+                                        horizontalAlignment: Text.AlignRight
+                                    }
+                                }
+
+                                // 4 Individual sliders (when per-side active)
+                                ColumnLayout {
+                                    visible: settingsWindow.perSideGapsIn
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    // Top Padding
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Padding Top"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 30; stepSize: 1; value: settingsWindow.gapsInTop
+                                            onMoved: { settingsWindow.gapsInTop = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsInTop + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Right Padding
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Padding Right"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 30; stepSize: 1; value: settingsWindow.gapsInRight
+                                            onMoved: { settingsWindow.gapsInRight = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsInRight + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Bottom Padding
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Padding Bottom"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 30; stepSize: 1; value: settingsWindow.gapsInBottom
+                                            onMoved: { settingsWindow.gapsInBottom = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsInBottom + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+
+                                    // Left Padding
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+                                        Text { text: "Padding Left"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                        Slider {
+                                            Layout.fillWidth: true; from: 0; to: 30; stepSize: 1; value: settingsWindow.gapsInLeft
+                                            onMoved: { settingsWindow.gapsInLeft = Math.round(value); liveEvalTimer.restart() }
+                                        }
+                                        Text { text: settingsWindow.gapsInLeft + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 9; font.bold: true; color: Theme.accent; Layout.preferredWidth: 36; horizontalAlignment: Text.AlignRight }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ---------------- SECTION 3: CORNERS & BORDERS ----------------
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: secGeomCol.implicitHeight + 16
+                        radius: 8
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionGeometryOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: secGeomCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
+
+                            // Header Clickable
+                            Item {
+                                Layout.fillWidth: true
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Corner Radius & Borders"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: geomBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: geomBadgeText
+                                            anchors.centerIn: parent
+                                            text: settingsWindow.rounding + "px rad / " + settingsWindow.borderSize + "px border"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionGeometryOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionGeometryOpen = !settingsWindow.sectionGeometryOpen
+                                }
+                            }
+
+                            // Body
+                            ColumnLayout {
+                                visible: settingsWindow.sectionGeometryOpen
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                // Corner Radius (Border Radius)
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text {
+                                        text: "Border Radius"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        color: Theme.fg1
+                                        Layout.preferredWidth: 90
+                                    }
+                                    Slider {
+                                        Layout.fillWidth: true
+                                        from: 0
+                                        to: 24
+                                        stepSize: 1
+                                        value: settingsWindow.rounding
+                                        onMoved: {
+                                            settingsWindow.rounding = Math.round(value)
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                    Text {
+                                        text: settingsWindow.rounding + " px"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.accent
+                                        Layout.preferredWidth: 40
+                                        horizontalAlignment: Text.AlignRight
+                                    }
+                                }
+
+                                // Border Width
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text {
+                                        text: "Border Width"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        color: Theme.fg1
+                                        Layout.preferredWidth: 90
+                                    }
+                                    Slider {
+                                        Layout.fillWidth: true
+                                        from: 0
+                                        to: 6
+                                        stepSize: 1
+                                        value: settingsWindow.borderSize
+                                        onMoved: {
+                                            settingsWindow.borderSize = Math.round(value)
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                    Text {
+                                        text: settingsWindow.borderSize + " px"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.accent
+                                        Layout.preferredWidth: 40
+                                        horizontalAlignment: Text.AlignRight
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ---------------- SECTION 4: BLUR, OPACITY & EFFECTS ----------------
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: secEffectsCol.implicitHeight + 16
+                        radius: 8
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionEffectsOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: secEffectsCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
+
+                            // Header Clickable
+                            Item {
+                                Layout.fillWidth: true
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "✨"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Blur, Opacity & FX"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: fxBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: fxBadgeText
+                                            anchors.centerIn: parent
+                                            text: (settingsWindow.blurEnabled ? "Blur ON" : "Blur OFF") + " • " + Math.round(settingsWindow.activeOpacity * 100) + "%"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionEffectsOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionEffectsOpen = !settingsWindow.sectionEffectsOpen
+                                }
+                            }
+
+                            // Body
+                            ColumnLayout {
+                                visible: settingsWindow.sectionEffectsOpen
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                // Blur Toggle Switch
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 26
+                                    radius: 6
+                                    color: settingsWindow.blurEnabled ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : Theme.bg2
+                                    border.color: settingsWindow.blurEnabled ? Theme.accent : Theme.bg3
+                                    border.width: 1
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        Text {
+                                            text: "Hardware Window Blur"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            color: settingsWindow.blurEnabled ? Theme.accent : Theme.silver
+                                            Layout.fillWidth: true
+                                        }
+                                        Text {
+                                            text: settingsWindow.blurEnabled ? "ENABLED" : "DISABLED"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.bold: true
+                                            font.pixelSize: 8
+                                            color: settingsWindow.blurEnabled ? Theme.accent : Theme.silver
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            settingsWindow.blurEnabled = !settingsWindow.blurEnabled
+                                            liveEvalTimer.restart()
+                                        }
+                                    }
+                                }
+
+                                // Blur Size
+                                RowLayout {
+                                    visible: settingsWindow.blurEnabled
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text { text: "Blur Size"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                    Slider {
+                                        Layout.fillWidth: true; from: 1; to: 16; stepSize: 1; value: settingsWindow.blurSize
+                                        onMoved: { settingsWindow.blurSize = Math.round(value); liveEvalTimer.restart() }
+                                    }
+                                    Text { text: settingsWindow.blurSize + " px"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.accent; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                }
+
+                                // Blur Passes
+                                RowLayout {
+                                    visible: settingsWindow.blurEnabled
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text { text: "Blur Passes"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                    Slider {
+                                        Layout.fillWidth: true; from: 1; to: 5; stepSize: 1; value: settingsWindow.blurPasses
+                                        onMoved: { settingsWindow.blurPasses = Math.round(value); liveEvalTimer.restart() }
+                                    }
+                                    Text { text: settingsWindow.blurPasses + " x"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.accent; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                }
+
+                                // Active Opacity
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text { text: "Active Opacity"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                    Slider {
+                                        Layout.fillWidth: true; from: 0.50; to: 1.0; stepSize: 0.05; value: settingsWindow.activeOpacity
+                                        onMoved: { settingsWindow.activeOpacity = Math.round(value * 100) / 100.0; liveEvalTimer.restart() }
+                                    }
+                                    Text { text: Math.round(settingsWindow.activeOpacity * 100) + " %"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.accent; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                }
+
+                                // Inactive Opacity
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+                                    Text { text: "Inactive Opacity"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.fg1; Layout.preferredWidth: 90 }
+                                    Slider {
+                                        Layout.fillWidth: true; from: 0.50; to: 1.0; stepSize: 0.05; value: settingsWindow.inactiveOpacity
+                                        onMoved: { settingsWindow.inactiveOpacity = Math.round(value * 100) / 100.0; liveEvalTimer.restart() }
+                                    }
+                                    Text { text: Math.round(settingsWindow.inactiveOpacity * 100) + " %"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; font.bold: true; color: Theme.accent; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                }
+                            }
+                        }
+                    }
+
+                    // ---------------- SECTION 5: ANIMATION PROFILES ----------------
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: secAnimCol.implicitHeight + 16
+                        radius: 8
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionAnimOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: secAnimCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
+
+                            // Header Clickable
+                            Item {
+                                Layout.fillWidth: true
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "󰓅"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Animation Physics Profile"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: animBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: animBadgeText
+                                            anchors.centerIn: parent
+                                            text: settingsWindow.animProfile.toUpperCase()
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionAnimOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionAnimOpen = !settingsWindow.sectionAnimOpen
+                                }
+                            }
+
+                            // Body
+                            RowLayout {
+                                visible: settingsWindow.sectionAnimOpen
+                                Layout.fillWidth: true
+                                spacing: 6
+
+                                Repeater {
+                                    model: [
+                                        { id: "instant", label: "Instant", icon: "󰓅" },
+                                        { id: "snappy",  label: "Snappy",  icon: "󰁨" },
+                                        { id: "smooth",  label: "Smooth",  icon: "󰓅" },
+                                        { id: "float",   label: "Float",   icon: "󰾕" }
+                                    ]
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        height: 34
+                                        radius: 6
+                                        readonly property bool isSelected: settingsWindow.animProfile === modelData.id
+                                        color: isSelected ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.16) : Theme.bg2
+                                        border.color: isSelected ? Theme.accent : (pMouse.containsMouse ? Theme.accent : Theme.bg3)
+                                        border.width: isSelected ? 1.5 : 1
+
+                                        RowLayout {
+                                            anchors.centerIn: parent
+                                            spacing: 4
+                                            Text {
+                                                text: modelData.icon
+                                                font.family: "JetBrainsMono Nerd Font"
+                                                font.pixelSize: 11
+                                                color: parent.parent.isSelected ? Theme.accent : Theme.silver
+                                            }
+                                            Text {
+                                                text: modelData.label
+                                                font.family: "JetBrainsMono Nerd Font"
+                                                font.bold: true
+                                                font.pixelSize: 9
+                                                color: parent.parent.isSelected ? Theme.fg0 : Theme.fg1
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: pMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: settingsWindow.setAnimProfile(modelData.id)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ---------------- SECTION 6: SURFACE GLASS & TONE ----------------
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: secSurfCol.implicitHeight + 16
+                        radius: 8
+                        color: Theme.bg1
+                        border.color: settingsWindow.sectionSurfaceOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg2
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: secSurfCol
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            spacing: 8
+
+                            // Header Clickable
+                            Item {
+                                Layout.fillWidth: true
+                                implicitHeight: 24
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    spacing: 8
+
+                                    Text {
+                                        text: "󰏘"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: "Surface Glass & Tone"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.bold: true
+                                        font.pixelSize: 11
+                                        color: Theme.fg0
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Rectangle {
+                                        height: 18
+                                        implicitWidth: surfBadgeText.implicitWidth + 8
+                                        radius: 4
+                                        color: Theme.bg2
+                                        Text {
+                                            id: surfBadgeText
+                                            anchors.centerIn: parent
+                                            text: settingsWindow.activeSurface.toUpperCase()
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    Text {
+                                        text: settingsWindow.sectionSurfaceOpen ? "󰅃" : "󰅂"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 12
+                                        color: Theme.silver
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settingsWindow.sectionSurfaceOpen = !settingsWindow.sectionSurfaceOpen
+                                }
+                            }
+
+                            // Body
+                            ColumnLayout {
+                                visible: settingsWindow.sectionSurfaceOpen
+                                Layout.fillWidth: true
+                                spacing: 6
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 6
+
+                                    Repeater {
+                                        model: [
+                                            { id: "obsidian", name: "Obsidian", icon: "󰌶" },
+                                            { id: "amoled", name: "AMOLED 0%", icon: "🖤" },
+                                            { id: "blood", name: "Blood Red", icon: "🩸" },
+                                            { id: "steel", name: "Steel", icon: "⚔️" }
+                                        ]
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            height: 32
+                                            radius: 6
+                                            readonly property bool isActive: settingsWindow.activeSurface === modelData.id
+                                            color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (sMouse.containsMouse ? Theme.bg3 : Theme.bg2)
+                                            border.color: isActive ? Theme.accent : (sMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg3)
+                                            border.width: isActive ? 1.5 : 1
+
+                                            RowLayout {
+                                                anchors.centerIn: parent
+                                                spacing: 4
+                                                Text {
+                                                    text: modelData.icon
+                                                    font.family: "JetBrainsMono Nerd Font"
+                                                    font.pixelSize: 10
+                                                    color: parent.parent.isActive ? Theme.accent : Theme.fg1
+                                                }
+                                                Text {
+                                                    text: modelData.name
+                                                    font.family: "JetBrainsMono Nerd Font"
+                                                    font.bold: true
+                                                    font.pixelSize: 9
+                                                    color: parent.parent.isActive ? Theme.accent : Theme.fg0
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                id: sMouse
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    settingsWindow.activeSurface = modelData.id
+                                                    settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface " + modelData.id)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Material Tint banner button
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 38
+                                    radius: 6
+                                    readonly property bool isActive: settingsWindow.activeSurface === "material"
+                                    color: isActive ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15) : (matMouse.containsMouse ? Theme.bg3 : Theme.bg2)
+                                    border.color: isActive ? Theme.accent : (matMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4) : Theme.bg3)
+                                    border.width: isActive ? 1.5 : 1
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 10
+                                        anchors.rightMargin: 10
+                                        spacing: 8
+
+                                        Text {
+                                            text: "󰏘"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 12
+                                            color: Theme.accent
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 1
+                                            Text {
+                                                text: "Material Tint (Dynamic Wallpaper Tone)"
+                                                font.family: "JetBrainsMono Nerd Font"
+                                                font.bold: true
+                                                font.pixelSize: 10
+                                                color: parent.parent.parent.isActive ? Theme.accent : Theme.fg0
+                                            }
+                                        }
+
+                                        Text {
+                                            visible: parent.parent.isActive
+                                            text: "󰄬 ACTIVE"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.bold: true
+                                            font.pixelSize: 9
+                                            color: Theme.accent
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: matMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            settingsWindow.activeSurface = "material"
+                                            settingsWindow.runDetached(Quickshell.env("HOME") + "/.config/hypr/scripts/theme-switcher.sh --surface material")
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -714,152 +1510,158 @@ PanelWindow {
             }
 
             // ================= TAB 1: PROCESSES & TASKS =================
-            ColumnLayout {
+            ScrollView {
                 visible: settingsWindow.currentTab === 1
                 Layout.fillWidth: true
-                spacing: 12
+                Layout.fillHeight: true
+                clip: true
+                contentWidth: availableWidth
 
-                // Resource Overview Cards
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    // CPU Metric
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 52
-                        radius: 8
-                        color: Theme.bg1
-                        border.color: Theme.bg2
-                        border.width: 1
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 4
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Text { text: "󰻠 CPU"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
-                                Item { Layout.fillWidth: true }
-                                Text { text: settingsWindow.hwCpu + "%"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 11; color: Theme.accent }
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 4
-                                radius: 2
-                                color: Theme.bg2
-                                Rectangle {
-                                    width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwCpu)) / 100.0)
-                                    height: parent.height
-                                    radius: 2
-                                    color: Theme.accent
-                                }
-                            }
-                        }
-                    }
-
-                    // RAM Metric
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 52
-                        radius: 8
-                        color: Theme.bg1
-                        border.color: Theme.bg2
-                        border.width: 1
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 4
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Text { text: "󰍛 RAM"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
-                                Item { Layout.fillWidth: true }
-                                Text { text: settingsWindow.hwRamStr; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 10; color: Theme.teal }
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 4
-                                radius: 2
-                                color: Theme.bg2
-                                Rectangle {
-                                    width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwRam)) / 100.0)
-                                    height: parent.height
-                                    radius: 2
-                                    color: Theme.teal
-                                }
-                            }
-                        }
-                    }
-
-                    // Disk Metric
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 52
-                        radius: 8
-                        color: Theme.bg1
-                        border.color: Theme.bg2
-                        border.width: 1
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 4
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Text { text: "󰋊 Disk"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
-                                Item { Layout.fillWidth: true }
-                                Text { text: settingsWindow.hwDiskStr; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 10; color: Theme.purple }
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 4
-                                radius: 2
-                                color: Theme.bg2
-                                Rectangle {
-                                    width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwDisk)) / 100.0)
-                                    height: parent.height
-                                    radius: 2
-                                    color: Theme.purple
-                                }
-                            }
-                        }
-                    }
+                ScrollBar.vertical: ScrollBar {
+                    active: true
+                    policy: ScrollBar.AsNeeded
                 }
 
-                // Process List Header
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text {
-                        text: "Active Tasks (Ranked by Memory RSS)"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.bold: true
-                        font.pixelSize: 11
-                        color: Theme.fg0
-                    }
-                    Item { Layout.fillWidth: true }
-                    Text {
-                        text: "Click Kill to terminate task"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 9
-                        color: Theme.silver
-                    }
-                }
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 10
 
-                // Scrollable Process Table
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 250
-                    clip: true
+                    // Resource Overview Cards
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
 
+                        // CPU Metric
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 52
+                            radius: 8
+                            color: Theme.bg1
+                            border.color: Theme.bg2
+                            border.width: 1
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 4
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    Text { text: "󰻠 CPU"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: settingsWindow.hwCpu + "%"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 11; color: Theme.accent }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 4
+                                    radius: 2
+                                    color: Theme.bg2
+                                    Rectangle {
+                                        width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwCpu)) / 100.0)
+                                        height: parent.height
+                                        radius: 2
+                                        color: Theme.accent
+                                    }
+                                }
+                            }
+                        }
+
+                        // RAM Metric
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 52
+                            radius: 8
+                            color: Theme.bg1
+                            border.color: Theme.bg2
+                            border.width: 1
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 4
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    Text { text: "󰍛 RAM"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: settingsWindow.hwRam + "%"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 11; color: Theme.accent }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 4
+                                    radius: 2
+                                    color: Theme.bg2
+                                    Rectangle {
+                                        width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwRam)) / 100.0)
+                                        height: parent.height
+                                        radius: 2
+                                        color: Theme.accent
+                                    }
+                                }
+                            }
+                        }
+
+                        // Disk Metric
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 52
+                            radius: 8
+                            color: Theme.bg1
+                            border.color: Theme.bg2
+                            border.width: 1
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 4
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    Text { text: "󰋊 DISK"; font.family: "JetBrainsMono Nerd Font"; font.pixelSize: 10; color: Theme.silver }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: settingsWindow.hwDisk + "%"; font.family: "JetBrainsMono Nerd Font"; font.bold: true; font.pixelSize: 11; color: Theme.accent }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 4
+                                    radius: 2
+                                    color: Theme.bg2
+                                    Rectangle {
+                                        width: parent.width * (Math.min(100, Math.max(0, settingsWindow.hwDisk)) / 100.0)
+                                        height: parent.height
+                                        radius: 2
+                                        color: Theme.accent
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Top Processes Header
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text {
+                            text: "Active Resource Consumers"
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.bold: true
+                            font.pixelSize: 11
+                            color: Theme.silver
+                        }
+                        Item { Layout.fillWidth: true }
+                        Text {
+                            text: "RAM: " + settingsWindow.hwRamStr
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 9
+                            color: Theme.gray
+                        }
+                    }
+
+                    // Process Items
                     ColumnLayout {
-                        width: parent.width
+                        Layout.fillWidth: true
                         spacing: 4
 
                         Repeater {
@@ -869,124 +1671,73 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 height: 32
                                 radius: 6
-                                color: procMouse.containsMouse ? Theme.bg2 : Theme.bg1
-                                border.color: procMouse.containsMouse ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.3) : Theme.bg2
+                                color: Theme.bg1
+                                border.color: Theme.bg2
                                 border.width: 1
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 10
+                                    anchors.leftMargin: 8
                                     anchors.rightMargin: 8
                                     spacing: 8
 
-                                    // Index
                                     Text {
-                                        text: String(index + 1) + "."
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 10
-                                        color: Theme.silver
-                                        Layout.preferredWidth: 20
-                                    }
-
-                                    // Name
-                                    Text {
-                                        text: modelData.name
+                                        text: "󰒋"
                                         font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 11
+                                        color: Theme.accent
+                                    }
+
+                                    Text {
+                                        text: (modelData.name ?? "process")
+                                        font.family: "JetBrainsMono Nerd Font"
                                         font.bold: true
+                                        font.pixelSize: 10
                                         color: Theme.fg0
                                         elide: Text.ElideRight
                                         Layout.fillWidth: true
                                     }
 
-                                    // PID
-                                    Rectangle {
-                                        height: 18
-                                        radius: 4
-                                        width: pidText.implicitWidth + 8
-                                        color: Theme.bg0
-                                        border.color: Theme.bg3
-                                        border.width: 1
-                                        Text {
-                                            id: pidText
-                                            anchors.centerIn: parent
-                                            text: "PID " + modelData.pid
-                                            font.family: "JetBrainsMono Nerd Font"
-                                            font.pixelSize: 8
-                                            color: Theme.silver
-                                        }
-                                    }
-
-                                    // RAM % and RSS
                                     Text {
-                                        text: modelData.mem
+                                        text: (modelData.cpu ?? "0") + "% CPU"
                                         font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                        color: Theme.teal
-                                        Layout.preferredWidth: 64
-                                        horizontalAlignment: Text.AlignRight
+                                        font.pixelSize: 9
+                                        color: Theme.silver
                                     }
 
-                                    // Kill Action Button
+                                    Text {
+                                        text: (modelData.mem ?? "0") + "% RAM"
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 9
+                                        color: Theme.silver
+                                    }
+
+                                    // Kill button
                                     Rectangle {
-                                        id: killBtn
-                                        width: 52
-                                        height: 22
+                                        width: 20
+                                        height: 20
                                         radius: 4
-                                        color: killMouse.containsMouse ? Theme.red : Theme.bg2
-                                        border.color: killMouse.containsMouse ? Theme.red : Theme.bg3
-                                        border.width: 1
-
-                                        RowLayout {
+                                        color: killMouse.containsMouse ? Qt.rgba(Theme.red.r, Theme.red.g, Theme.red.b, 0.2) : Theme.bg2
+                                        Text {
                                             anchors.centerIn: parent
-                                            spacing: 3
-                                            Text {
-                                                text: "󰅖"
-                                                font.family: "JetBrainsMono Nerd Font"
-                                                font.pixelSize: 10
-                                                color: killMouse.containsMouse ? Theme.bg0 : Theme.red
-                                            }
-                                            Text {
-                                                text: "Kill"
-                                                font.family: "JetBrainsMono Nerd Font"
-                                                font.bold: true
-                                                font.pixelSize: 10
-                                                color: killMouse.containsMouse ? Theme.bg0 : Theme.fg1
-                                            }
+                                            text: "󰅖"
+                                            font.family: "JetBrainsMono Nerd Font"
+                                            font.pixelSize: 9
+                                            color: killMouse.containsMouse ? Theme.red : Theme.silver
                                         }
-
                                         MouseArea {
                                             id: killMouse
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                let targetPid = String(modelData.pid)
-                                                let targetName = String(modelData.name)
-
-                                                // Optimistically remove from list
-                                                let updated = []
-                                                for (let i = 0; i < settingsWindow.topProcs.length; i++) {
-                                                    if (String(settingsWindow.topProcs[i].pid) !== targetPid) {
-                                                        updated.push(settingsWindow.topProcs[i])
-                                                    }
+                                                if (modelData.pid) {
+                                                    settingsWindow.runDetached("kill -9 " + modelData.pid)
+                                                    hwStatsProc.running = true
                                                 }
-                                                settingsWindow.topProcs = updated
-
-                                                // Force kill and notify
-                                                settingsWindow.runDetached("kill -9 " + targetPid + " && notify-send -a 'System Hub' -i 'process-stop' 'Process Terminated' 'Killed " + targetName + " (PID " + targetPid + ")'")
-                                                hwStatsProc.running = true
                                             }
                                         }
                                     }
-                                }
-
-                                MouseArea {
-                                    id: procMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    z: -1
                                 }
                             }
                         }
@@ -994,39 +1745,33 @@ PanelWindow {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: Theme.bg2
-            }
-
-            // FOOTER ACTIONS
+            // 3. Footer Bar
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 8
 
-                // Left Action Button
                 Rectangle {
-                    height: 34
-                    Layout.preferredWidth: settingsWindow.currentTab === 0 ? 150 : 130
-                    radius: 8
+                    height: 30
+                    implicitWidth: leftActionRow.implicitWidth + 16
+                    radius: 6
                     color: leftActionMouse.containsMouse ? Theme.bg2 : Theme.bg1
-                    border.color: Theme.bg3
+                    border.color: leftActionMouse.containsMouse ? Theme.accent : Theme.bg3
                     border.width: 1
 
                     RowLayout {
+                        id: leftActionRow
                         anchors.centerIn: parent
                         spacing: 6
                         Text {
                             text: settingsWindow.currentTab === 0 ? "󰦛" : "󰑐"
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
+                            font.pixelSize: 11
                             color: Theme.silver
                         }
                         Text {
-                            text: settingsWindow.currentTab === 0 ? "Reset Defaults" : "Refresh"
+                            text: settingsWindow.currentTab === 0 ? "Reset Defaults" : "Refresh Telemetry"
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 11
+                            font.pixelSize: 10
                             color: Theme.fg1
                         }
                     }
@@ -1048,17 +1793,24 @@ PanelWindow {
 
                 Item { Layout.fillWidth: true }
 
+                Text {
+                    text: "ESC to close"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 9
+                    color: Theme.silver
+                }
+
                 Rectangle {
-                    height: 34
-                    Layout.preferredWidth: 90
-                    radius: 8
+                    height: 30
+                    Layout.preferredWidth: 70
+                    radius: 6
                     color: Theme.accent
                     Text {
                         anchors.centerIn: parent
                         text: "Done"
                         font.family: "JetBrainsMono Nerd Font"
                         font.bold: true
-                        font.pixelSize: 11
+                        font.pixelSize: 10
                         color: Theme.bg0
                     }
                     MouseArea {
