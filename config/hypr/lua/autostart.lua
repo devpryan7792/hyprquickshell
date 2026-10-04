@@ -1,18 +1,12 @@
 -- autostart.lua
 -- Applications and processes to start on Hyprland launch
 
-local home = os.getenv("HOME")
-
 hl.on("hyprland.start", function()
-    -- Restore last wallpaper via awww
-    hl.exec_cmd(home .. "/.config/hypr/scripts/wallpaper.sh")
+    hl.exec_cmd(os.getenv("HOME") .. "/.config/hypr/scripts/wallpaper.sh")  -- Restore last wallpaper via awww
+    hl.exec_cmd("env MALLOC_ARENA_MAX=2 quickshell -d")  -- Launch Quickshell (bar + dashboard daemon)
+    hl.exec_cmd(os.getenv("HOME") .. "/.local/bin/hyprsunset -i &") -- Blue light / Night light daemon
 
-    -- Launch Quickshell (bar + dashboard daemon)
-    hl.exec_cmd("quickshell -d")
-
-    -- Blue light / Night light daemon (checks PATH and ~/.local/bin)
-    hl.exec_cmd("sh -c 'if command -v hyprsunset >/dev/null 2>&1; then hyprsunset -i; elif [ -x \"$HOME/.local/bin/hyprsunset\" ]; then \"$HOME/.local/bin/hyprsunset\" -i; fi' &")
-
+    hl.exec_cmd("hypridle &")  -- Idle management daemon (screen dim, lock, sleep)
     -- Clipboard history daemon — persistent watchdog loop
-    hl.exec_cmd("sh -c 'CLIP_BIN=$(command -v cliphist 2>/dev/null || echo \"$HOME/.local/bin/cliphist\"); while true; do wl-paste --watch \"$CLIP_BIN\" store || sleep 1; done' &")
+    hl.exec_cmd("while true; do wl-paste --watch " .. os.getenv("HOME") .. "/.local/bin/cliphist store || sleep 1; done &")
 end)

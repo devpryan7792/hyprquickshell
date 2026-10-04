@@ -9,12 +9,23 @@ ShellRoot {
     property bool launcherVisible: false
     property bool wallpaperPickerVisible: false
     property bool calendarVisible: false
+    property bool sessionVisible: false
 
     function closeAll() {
         dashboardVisible = false
         launcherVisible = false
         wallpaperPickerVisible = false
         calendarVisible = false
+        sessionVisible = false
+    }
+
+    function toggleSession() {
+        if (sessionVisible) {
+            sessionVisible = false
+        } else {
+            closeAll()
+            sessionVisible = true
+        }
     }
 
     function toggleDashboard() {
@@ -87,6 +98,11 @@ ShellRoot {
     }
 
     IpcHandler {
+        target: "session"
+        function toggle() { root.toggleSession() }
+    }
+
+    IpcHandler {
         target: "theme"
         function reload() { Theme.reload() }
     }
@@ -126,6 +142,13 @@ ShellRoot {
         id: calendarDropdown
         visible: root.calendarVisible
         onRequestClose: root.calendarVisible = false
+    }
+
+    // Native Session & Power Menu Modal (wlogout replacement)
+    SessionMenu {
+        id: sessionMenu
+        visible: root.sessionVisible
+        onRequestClose: root.sessionVisible = false
     }
 
     // IPC handler for notifications

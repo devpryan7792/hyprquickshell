@@ -34,6 +34,13 @@ hl.bind(mainMod .. " + ALT + N",   hl.dsp.exec_cmd(home .. "/.config/hypr/script
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd(home .. "/.config/hypr/scripts/bluelight.sh toggle"))
 
 -- ── Session / Power ──────────────────────────────────────────────────────
+-- Lock screen with hyprlock (SUPER+L)
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+
+-- Power & Session Menu (SUPER+ESCAPE and SUPER+X)
+hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("quickshell ipc call session toggle"))
+hl.bind(mainMod .. " + X",      hl.dsp.exec_cmd("quickshell ipc call session toggle"))
+
 -- Exit Hyprland compositor
 hl.bind(mainMod .. " + M", hl.dsp.exit())
 

@@ -1,27 +1,48 @@
 #!/usr/bin/env bash
 # theme-switcher.sh
-# Sets wallpaper via awww, generates Material You colors via Matugen,
+# Sets wallpaper via awww, generates dynamic colors via theme-engine.py,
 # and updates Hyprland, Quickshell, and Ghostty live.
 
 WALL_DIR="$HOME/Pictures/wallpaper"
 WALL_CACHE="$HOME/.cache/hyprdots-wallpaper"
 SCHEME_CACHE="$HOME/.cache/hyprdots-theme-scheme"
+SURFACE_CACHE="$HOME/.cache/hyprdots-surface-mode"
+ENGINE="$HOME/.config/hypr/scripts/theme-engine.py"
+
 mkdir -p "$(dirname "$WALL_CACHE")"
 
-# If changing scheme on existing wallpaper: theme-switcher.sh --scheme <type>
-if [[ "$1" == "--scheme" && -n "$2" ]]; then
-    SCHEME="$2"
-    echo "$SCHEME" > "$SCHEME_CACHE"
-    WALL=$(cat "$WALL_CACHE" 2>/dev/null)
+# Load cached preferences
+WALL=$(cat "$WALL_CACHE" 2>/dev/null)
+SCHEME=$(cat "$SCHEME_CACHE" 2>/dev/null)
+SURFACE_MODE=$(cat "$SURFACE_CACHE" 2>/dev/null)
+[ -z "$SCHEME" ] && SCHEME="scheme-vibrant"
+[ -z "$SURFACE_MODE" ] && SURFACE_MODE="obsidian"
+
+# Handler for surface style change (--surface <obsidian|material>)
+if [[ "$1" == "--surface" && -n "$2" ]]; then
+    SURFACE_MODE="$2"
+    echo "$SURFACE_MODE" > "$SURFACE_CACHE"
     if [[ -z "$WALL" || ! -f "$WALL" ]]; then
         WALL=$(find "$WALL_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | head -n 1)
     fi
-    MATUGEN_BIN="$(command -v matugen 2>/dev/null || echo "$HOME/.local/bin/matugen")"
-    if [[ -x "$MATUGEN_BIN" && -f "$WALL" ]]; then
-        "$MATUGEN_BIN" image "$WALL" --type "$SCHEME" --source-color-index 0 -c "$HOME/.config/matugen/config.toml"
-        quickshell ipc call theme reload >/dev/null 2>&1 || true
-        hyprctl reload &
+    python3 "$ENGINE" "$WALL" "$SCHEME" "$SURFACE_MODE"
+    quickshell ipc call theme reload >/dev/null 2>&1 || true
+    hyprctl reload &
+    touch "$HOME/.config/ghostty/config" 2>/dev/null || true
+    exit 0
+fi
+
+# Handler for scheme change (--scheme <type>)
+if [[ "$1" == "--scheme" && -n "$2" ]]; then
+    SCHEME="$2"
+    echo "$SCHEME" > "$SCHEME_CACHE"
+    if [[ -z "$WALL" || ! -f "$WALL" ]]; then
+        WALL=$(find "$WALL_DIR" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | head -n 1)
     fi
+    python3 "$ENGINE" "$WALL" "$SCHEME" "$SURFACE_MODE"
+    quickshell ipc call theme reload >/dev/null 2>&1 || true
+    hyprctl reload &
+    touch "$HOME/.config/ghostty/config" 2>/dev/null || true
     exit 0
 fi
 
@@ -46,30 +67,20 @@ fi
 echo "Setting wallpaper: $WALL"
 echo "$WALL" > "$WALL_CACHE"
 
-SCHEME="scheme-tonal-spot"
-if [[ -f "$SCHEME_CACHE" ]]; then
-    CACHED_SCHEME=$(cat "$SCHEME_CACHE")
-    if [[ -n "$CACHED_SCHEME" ]]; then
-        SCHEME="$CACHED_SCHEME"
-    fi
-fi
-
-# Generate dynamic color palettes first
-MATUGEN_BIN="$(command -v matugen 2>/dev/null || echo "$HOME/.local/bin/matugen")"
-if [[ -x "$MATUGEN_BIN" ]]; then
-    "$MATUGEN_BIN" image "$WALL" --type "$SCHEME" --source-color-index 0 -c "$HOME/.config/matugen/config.toml"
-    quickshell ipc call theme reload >/dev/null 2>&1 || true
-fi
+# Run unified Theme Engine
+python3 "$ENGINE" "$WALL" "$SCHEME" "$SURFACE_MODE"
 
 # Display wallpaper with smooth wipe transition asynchronously
 awww img "$WALL" --transition-type wipe --transition-step 90 --transition-fps 144 &
 
-# Reload Hyprland to update border colors
+# Reload components
+quickshell ipc call theme reload >/dev/null 2>&1 || true
 hyprctl reload &
+touch "$HOME/.config/ghostty/config" 2>/dev/null || true
 
 # Ensure Quickshell is running if it was closed
 if ! quickshell list 2>/dev/null | grep -q "quickshell"; then
     quickshell -d
 fi
 
-echo "Theme updated to match: $(basename "$WALL") with $SCHEME"
+echo "Theme updated to match: $(basename "$WALL") [$SURFACE_MODE / $SCHEME]"
