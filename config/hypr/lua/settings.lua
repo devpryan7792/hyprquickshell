@@ -12,10 +12,10 @@ hl.config({
     general = {
         gaps_in  = 3,
         gaps_out = 6,
-        border_size = 2,
+        border_size = 1,
         col = {
-            active_border   = { colors = { "rgba(" .. colors.gray .. "ee)", "rgba(" .. colors.fg1 .. "aa)" }, angle = 45 },
-            inactive_border = "rgba(" .. colors.bg1 .. "ee)",
+            active_border   = { colors = { "rgba(" .. colors.primary .. "cc)", "rgba(" .. colors.bg3 .. "55)" }, angle = 45 },
+            inactive_border = "rgba(" .. colors.bg1 .. "aa)",
         },
         resize_on_border = false,
         allow_tearing    = false,
@@ -88,3 +88,7 @@ hl.animation({ leaf = "workspaces",    enabled = true, speed = 1.94, bezier = "a
 hl.animation({ leaf = "workspacesIn",  enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
 hl.animation({ leaf = "zoomFactor",    enabled = true, speed = 7,    bezier = "quick" })
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("GBM_BACKEND", "nvidia-drm")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("WLR_NO_HARDWARE_CURSORS", "1")

@@ -39,7 +39,7 @@ PanelWindow {
     property int gapsIn: 3
     property int gapsOut: 6
     property int rounding: 6
-    property int borderSize: 2
+    property int borderSize: 1
     property string animProfile: "smooth"
     property string activeSurface: "material"
 

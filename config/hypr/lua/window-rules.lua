@@ -38,3 +38,24 @@ hl.layer_rule({
     ignore_alpha = 0.2,
 })
 
+-- Seamless borderless terminals (Ghostty, Kitty, Foot, Alacritty)
+hl.window_rule({
+    name = "terminal-seamless",
+    match = { class = "^(com\\.mitchellh\\.ghostty|ghostty|kitty|foot|Alacritty)$" },
+    border_size = 0,
+})
+
+-- Smart borders: No border when only one tiled window is on the workspace
+hl.window_rule({
+    name = "no-border-when-only",
+    match = { float = false, workspace = "w[tv1]" },
+    border_size = 0,
+})
+
+-- No border when fullscreen / monocle
+hl.window_rule({
+    name = "no-border-fullscreen",
+    match = { float = false, workspace = "f[1]" },
+    border_size = 0,
+})
+
