@@ -135,7 +135,7 @@ PanelWindow {
                 spacing: 10
 
                 Text {
-                    text: wallpaperPickerWindow.wallOnlyMode ? "󰸉  Wallpaper Selector (Theme Preserved)" : "󰸉  Wallpaper & Dynamic Rice (Full Sync)"
+                    text: "󰸉  Wallpaper Studio"
                     font.family: "JetBrainsMono Nerd Font"
                     font.bold: true
                     font.pixelSize: 13
@@ -144,6 +144,7 @@ PanelWindow {
 
                 // Mode Switcher Pill
                 Rectangle {
+                    width: 172
                     height: 28
                     radius: 6
                     color: Theme.bg1
