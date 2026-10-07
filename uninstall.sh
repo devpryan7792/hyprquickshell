@@ -62,7 +62,7 @@ if ! prompt_confirm "Are you sure you want to remove the Hyprland rice configura
     exit 0
 fi
 
-LAST_BACKUP_FILE="$HOME/.config/hyprquickdots-last-backup"
+LAST_BACKUP_FILE="$HOME/.config/hyprquickshell-last-backup"
 RESTORED=false
 
 if [ -f "$LAST_BACKUP_FILE" ]; then

@@ -1,6 +1,6 @@
 <div align="center">
 
-# ✦ hyprquickdots ✦
+# ✦ hyprquickshell ✦
 ### Native Hyprland Lua • Pure Quickshell Desktop • Dynamic Material You
 
 [![Arch Linux](https://img.shields.io/badge/OS-Arch_Linux-1793d1?style=for-the-badge&logo=arch-linux&logoColor=white)](https://archlinux.org)
@@ -124,8 +124,8 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/devpryan7792/hyprquickdots.git ~/hyprquickdots
-cd ~/hyprquickdots
+git clone https://github.com/devpryan7792/hyprquickshell.git ~/hyprquickshell
+cd ~/hyprquickshell
 ```
 
 ### 2. Run the Turnkey Installer
@@ -144,7 +144,7 @@ The installer will:
 1. Detect Arch Linux, GPU hardware (Nvidia/AMD/Intel), and laptop battery status.
 2. Check for or install an AUR helper (`yay` / `paru`).
 3. Install required official and AUR packages (`hyprland`, `quickshell`, `matugen`, `awww`, `ghostty`, fonts, audio, portals).
-4. Safely back up existing configurations to `~/.config/hyprquickdots-backup-<timestamp>`.
+4. Safely back up existing configurations to `~/.config/hyprquickshell-backup-<timestamp>`.
 5. Deploy dotfiles and scripts with proper executable permissions.
 6. Clone essential Zsh plugins (`fzf-tab`, `zsh-autosuggestions`, `zsh-syntax-highlighting`).
 7. Deploy curated wallpapers and generate the initial Material You color palette.
@@ -155,7 +155,7 @@ The installer will:
 
 To cleanly remove the rice configurations or restore your previous desktop setup:
 ```bash
-cd ~/hyprquickdots
+cd ~/hyprquickshell
 ./uninstall.sh
 ```
 If an installation backup exists, `uninstall.sh` will prompt to automatically restore your original dotfiles.
