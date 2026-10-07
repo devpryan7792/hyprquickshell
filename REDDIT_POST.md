@@ -42,7 +42,7 @@ Packaged my daily driver setup! Built around native Hyprland Lua, a unified Quic
 - **Fetch**: [Fastfetch](https://github.com/fastfetch-cli/fastfetch)
 - **Font**: JetBrainsMono Nerd Font
 - **Wallpaper Daemon**: `awww`
-- **Dotfiles & Turnkey Installer**: [GitHub Repository](https://github.com/devpryan7792/hyprland-rice)
+- **Dotfiles & Turnkey Installer**: [GitHub Repository](https://github.com/devpryan7792/hyprquickdots)
 
 ### Key Features:
 - **Unified Quickshell DE**: Custom Qt6 QML desktop including an animated top bar, spotlight launcher (`SUPER + Space`), control center dashboard (`SUPER + N`), keybindings cheatsheet (`SUPER + /`), and wallpaper studio (`SUPER + W`).
@@ -55,6 +55,6 @@ Packaged my daily driver setup! Built around native Hyprland Lua, a unified Quic
 ## 🚀 Pre-Post Checklist
 - [x] Tested dotfiles with live symlinks in `~/.config`.
 - [x] Generated media assets without Antigravity IDE in view.
-- [x] Push repository to GitHub (`devpryan7792/hyprland-rice`).
+- [x] Push repository to GitHub (`devpryan7792/hyprquickdots`).
 - [ ] Create post on r/unixporn with the images above.
 - [ ] Immediately paste the details comment above as the top-level comment (r/unixporn automod removes posts without a details comment within 1 hour).

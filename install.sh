@@ -242,7 +242,7 @@ backup_existing() {
 
     local TIMESTAMP
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    local BACKUP_DIR="$HOME/.config/hyprland-rice-backup-$TIMESTAMP"
+    local BACKUP_DIR="$HOME/.config/hyprquickdots-backup-$TIMESTAMP"
     local HAS_BACKUPS=false
 
     mkdir -p "$BACKUP_DIR"
@@ -268,7 +268,7 @@ backup_existing() {
     done
 
     if [ "$HAS_BACKUPS" = true ]; then
-        echo "$BACKUP_DIR" > "$HOME/.config/hyprland-rice-last-backup"
+        echo "$BACKUP_DIR" > "$HOME/.config/hyprquickdots-last-backup"
         log_ok "Backup created safely at: $BACKUP_DIR"
     else
         rm -rf "$BACKUP_DIR"
