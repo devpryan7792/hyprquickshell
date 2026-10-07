@@ -197,7 +197,7 @@ PanelWindow {
     Rectangle {
         id: card
         width: 520
-        height: 440
+        height: 540
         anchors.centerIn: parent
         radius: 12
         color: Qt.rgba(Theme.bg0.r, Theme.bg0.g, Theme.bg0.b, 0.98)

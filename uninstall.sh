@@ -21,7 +21,28 @@ log_warn()  { echo -e "${YELLOW}⚠ [WARN]${NC} $*"; }
 log_err()   { echo -e "${RED}✖ [ERROR]${NC} $*"; }
 log_step()  { echo -e "\n${BOLD}${CYAN}==>${NC} ${BOLD}$*${NC}"; }
 
+AUTO_CONFIRM=false
+for arg in "$@"; do
+    case "$arg" in
+        -y|--yes)
+            AUTO_CONFIRM=true
+            ;;
+        -h|--help)
+            echo "Hyprland Rice Uninstaller"
+            echo "Usage: ./uninstall.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  -y, --yes    Unattended uninstallation"
+            echo "  -h, --help   Show this help message"
+            exit 0
+            ;;
+    esac
+done
+
 prompt_confirm() {
+    if [ "$AUTO_CONFIRM" = true ]; then
+        return 0
+    fi
     local message="$1"
     local default="${2:-N}"
     local prompt="[y/N]"
@@ -36,7 +57,7 @@ echo -e "\n${RED}${BOLD}========================================================
 echo -e "${RED}${BOLD}             Hyprland Rice Uninstaller & Restore                 ${NC}"
 echo -e "${RED}${BOLD}================================================================${NC}\n"
 
-if ! prompt_confirm "Are you sure you want to uninstall the Hyprland rice configurations?" "N"; then
+if ! prompt_confirm "Are you sure you want to remove the Hyprland rice configurations?" "N"; then
     log_info "Uninstallation aborted."
     exit 0
 fi
@@ -47,31 +68,31 @@ RESTORED=false
 if [ -f "$LAST_BACKUP_FILE" ]; then
     BACKUP_DIR=$(cat "$LAST_BACKUP_FILE")
     if [ -d "$BACKUP_DIR" ]; then
-        log_step "Backup Detected"
-        log_info "Found previous configuration backup at:"
-        echo -e "  ${CYAN}$BACKUP_DIR${NC}"
-        
+        log_step "Previous Configuration Backup Detected"
+        log_info "Backup found at: ${CYAN}$BACKUP_DIR${NC}"
+
         if prompt_confirm "Would you like to restore this backup now?" "Y"; then
             log_step "Restoring Previous Configurations"
 
-            # Remove current rice configs
+            # Remove current rice configs/symlinks
             rm -rf "$HOME/.config/hypr"
             rm -rf "$HOME/.config/quickshell"
             rm -rf "$HOME/.config/matugen"
             rm -rf "$HOME/.config/ghostty"
             rm -rf "$HOME/.config/fastfetch"
             rm -f  "$HOME/.config/starship.toml"
+            rm -rf "$HOME/.config/nvim"
+            rm -f  "$HOME/.zshrc"
+            rm -f  "$HOME/.bashrc"
 
             # Copy back from backup
             for item in "$BACKUP_DIR"/*; do
                 if [ -e "$item" ]; then
                     name=$(basename "$item")
                     if [[ "$name" == .* ]]; then
-                        # Home dotfiles (.zshrc, .bashrc)
                         log_info "Restoring ~/$name..."
                         cp -rf "$item" "$HOME/"
                     else
-                        # Config directories
                         log_info "Restoring ~/.config/$name..."
                         cp -rf "$item" "$HOME/.config/"
                     fi
@@ -86,21 +107,22 @@ if [ -f "$LAST_BACKUP_FILE" ]; then
 fi
 
 if [ "$RESTORED" = false ]; then
-    log_step "Removing Rice Configurations"
-    
-    if prompt_confirm "Remove ~/.config/{hypr, quickshell, matugen, ghostty, fastfetch, starship.toml}?" "Y"; then
+    log_step "Removing Rice Configurations & Symlinks"
+
+    if prompt_confirm "Remove ~/.config/{hypr, quickshell, matugen, ghostty, fastfetch, starship.toml, nvim}?" "Y"; then
         rm -rf "$HOME/.config/hypr"
         rm -rf "$HOME/.config/quickshell"
         rm -rf "$HOME/.config/matugen"
         rm -rf "$HOME/.config/ghostty"
         rm -rf "$HOME/.config/fastfetch"
         rm -f  "$HOME/.config/starship.toml"
-        log_ok "Removed rice configuration directories."
+        rm -rf "$HOME/.config/nvim"
+        log_ok "Removed rice configuration directories and symlinks."
     fi
 fi
 
 # Clean up runtime caches
-log_step "Cleaning Caches"
+log_step "Cleaning Runtime Caches"
 rm -f "$HOME/.cache/hyprdots-wallpaper"
 rm -f "$HOME/.cache/hyprdots-theme-scheme"
 rm -f "$HOME/.cache/quickshell-launcher-frecency.json"
@@ -108,5 +130,5 @@ rm -f "/tmp/bluelight_state" 2>/dev/null || true
 log_ok "Caches cleaned."
 
 echo -e "\n${GREEN}${BOLD}✔ Uninstallation complete.${NC}"
-log_info "Installed packages (hyprland, quickshell, etc.) have been preserved so dependencies are not broken."
-log_info "To remove packages completely, use: sudo pacman -Rns quickshell-git matugen-bin awww (or your chosen packages).\n"
+log_info "System packages (Hyprland, Quickshell, Ghostty, etc.) have been preserved so your environment remains functional."
+log_info "To remove packages completely if desired, run: sudo pacman -Rns quickshell matugen awww hyprsunset\n"

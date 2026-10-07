@@ -14,23 +14,35 @@
 
 ---
 
+## 🎬 Showcase Preview
+
+![Showcase GIF](assets/showcase.gif)
+
 </div>
 
-## 📸 Showcase Gallery
+---
+
+## 📸 Desktop Gallery
 
 <div align="center">
 
-### Clean Desktop View
+### Tiled Workspaces & Real Applications
+![Tiled Workspaces Overview](assets/screenshots/overview_1.png)
+
+### Clean Minimalist Desktop
 ![Clean Desktop](assets/screenshots/clean_desktop.png)
 
 ### Quickshell Spotlight App Launcher (`SUPER + SPACE`)
 ![App Launcher](assets/screenshots/launcher_1.png)
 
-### Quickshell Control Center & System Dashboard (`SUPER + N`)
+### Control Center & System Dashboard (`SUPER + N`)
 ![Control Center Dashboard](assets/screenshots/dashboard_1.png)
 
-### Tiled Workspaces & Dynamic Window Borders
-![Desktop Overview](assets/screenshots/overview_1.png)
+### Wallpaper Studio & Dynamic Palette Switcher (`SUPER + W`)
+![Wallpaper Studio](assets/screenshots/wallpaper_picker.png)
+
+### Keyboard Shortcuts Cheatsheet (`SUPER + /`)
+![Cheatsheet](assets/screenshots/cheatsheet_1.png)
 
 </div>
 
@@ -44,9 +56,9 @@
 | **Compositor** | [Hyprland](https://hyprland.org/) (`0.56+` with native Lua configuration) |
 | **Desktop Shell** | [Quickshell](https://git.outfoxxed.me/outfoxxed/quickshell) (Qt6 / QML native Top Bar, Dashboard, Launcher & Notifications) |
 | **Color Engine** | [Matugen](https://github.com/InioX/matugen) (Extracts Material You palettes from wallpaper) |
-| **Wallpaper Daemon** | [awww](https://github.com/danielfullmer/awww) (Smooth GPU transitions) |
+| **Wallpaper Daemon** | [awww](https://codeberg.org/LGFae/awww) (Smooth GPU-accelerated transitions) |
 | **Terminal** | [Ghostty](https://ghostty.org/) (Native blur, padding, Material You theme integration) |
-| **Shell** | `zsh` + `fzf-tab` (IntelliSense popups) + `zoxide` + `fastfetch` |
+| **Shell** | `zsh` + `fzf-tab` (IntelliSense completions) + `zoxide` + `fastfetch` |
 | **Prompt** | [Starship](https://starship.rs/) (Minimalist Material You dark theme) |
 | **Font** | `JetBrainsMono Nerd Font` |
 | **File Manager** | `thunar` |
@@ -64,14 +76,18 @@
   - **Dynamic Top Bar**: Displays animated workspace pills, active window title, system indicators, and an interactive calendar dropdown.
   - **Spotlight App Launcher**: Instant fuzzy application search with frecency scoring, icon resolution, and clipboard history (`SUPER + V`).
   - **Full Control Center**: Network/Bluetooth toggles, Night Light controls, hardware telemetry (CPU, RAM, GPU, top processes), media controls, and volume/brightness sliders.
-  - **Wallpaper Picker**: Visual wallpaper selector with live preview and smooth wipe transitions (`SUPER + W`).
+  - **Wallpaper Picker & Theme Studio**: Visual wallpaper selector with live preview and smooth wipe transitions (`SUPER + W`), plus curated theme studio (`ALT + T`).
+  - **Interactive Cheatsheet**: Searchable native keybindings guide accessible anytime via `SUPER + /`.
 - **🌈 Adaptive Material You Theming**:
   - Switching wallpapers dynamically extracts tonal color palettes with Matugen.
-  - Instantly updates Hyprland window border gradients, Quickshell accent colors, and Ghostty terminal color schemes on the fly.
+  - Instantly updates Hyprland window border gradients, Quickshell UI accents, and Ghostty terminal color schemes on the fly.
 - **⚡ Supercharged Shell**:
   - Zsh featuring `fzf-tab` for interactive floating tab completion with live previews.
   - Fast directory jumping with `zoxide`.
   - Modern CLI aliases (`eza` for `ls`, `bat` for `cat`, `fastfetch`).
+- **🗂️ Turnkey OS-Grade Automation**:
+  - Includes automated `install.sh` supporting both **Symlink** (for active development) and **Copy** modes, automated pre-flight hardware checks, AUR helper management, and timestamped backups.
+  - Includes safe `uninstall.sh` with automatic backup restoration.
 
 ---
 
@@ -82,7 +98,9 @@
 | `SUPER + SPACE` | Toggle Spotlight Application Launcher |
 | `SUPER + N` | Toggle Control Center / Dashboard Side Panel |
 | `SUPER + W` | Toggle Wallpaper Picker & Dynamic Theme Switcher |
-| `SUPER + V` | Open Clipboard History |
+| `ALT + T` | Open Curated Theme Preset Studio |
+| `SUPER + /` | Open Interactive Keybindings Cheatsheet |
+| `SUPER + V` | Open Clipboard History (cliphist) |
 | `SUPER + Q` | Launch Ghostty Terminal |
 | `SUPER + E` | Open Thunar File Manager |
 | `SUPER + B` | Launch Default Web Browser |
@@ -97,6 +115,7 @@
 | `SUPER + ALT + N` | Cycle Blue Light / Night Light (Off → 4500K → 3500K → 2700K) |
 | `Print` | Interactive Region Screenshot (copies to clipboard & saves to `~/Pictures/shots`) |
 | `SUPER + SHIFT + R` | Start / Stop Region Screen Recording (`~/Videos/recordings`) |
+| `SUPER + X` | Power & Session Menu |
 | `SUPER + M` | Exit Hyprland Compositor |
 
 ---
@@ -105,38 +124,41 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/hyprland-rice.git ~/hyprland-rice
+git clone https://github.com/devpryan7792/hyprland-rice.git ~/hyprland-rice
 cd ~/hyprland-rice
 ```
 
-### 2. Run the Installer
+### 2. Run the Turnkey Installer
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
 > **Options:**
-> - `./install.sh -y` — Non-interactive unattended installation.
-> - `./install.sh -s` — Symlinks dotfiles instead of copying (ideal for active development).
+> - `./install.sh -s` — **Symlink mode**: Creates live symlinks from `~/.config` to the repo (recommended for development & personal tweaking).
+> - `./install.sh -c` — **Copy mode**: Copies dotfiles to `~/.config` independently.
+> - `./install.sh -y` — **Unattended mode**: Automatically answers yes to all prompts.
+> - `./install.sh --no-pkg` — Skips package installation and deploys dotfiles only.
 
 The installer will:
-1. Verify system environment and detect your AUR helper (`yay` or `paru`).
-2. Install all required official and AUR packages.
-3. Automatically back up existing configs to `~/.config/hyprland-rice-backup-<timestamp>`.
-4. Deploy configurations for Hyprland, Quickshell, Matugen, Ghostty, Fastfetch, and Zsh.
-5. Clone required Zsh plugins (`fzf-tab`, autosuggestions, syntax-highlighting).
-6. Copy curated wallpapers and run initial palette extraction.
+1. Detect Arch Linux, GPU hardware (Nvidia/AMD/Intel), and laptop battery status.
+2. Check for or install an AUR helper (`yay` / `paru`).
+3. Install required official and AUR packages (`hyprland`, `quickshell`, `matugen`, `awww`, `ghostty`, fonts, audio, portals).
+4. Safely back up existing configurations to `~/.config/hyprland-rice-backup-<timestamp>`.
+5. Deploy dotfiles and scripts with proper executable permissions.
+6. Clone essential Zsh plugins (`fzf-tab`, `zsh-autosuggestions`, `zsh-syntax-highlighting`).
+7. Deploy curated wallpapers and generate the initial Material You color palette.
 
 ---
 
-## 🔄 Uninstallation
+## 🔄 Uninstallation & Backup Restore
 
-To cleanly remove the rice configurations and restore your previous desktop setup:
+To cleanly remove the rice configurations or restore your previous desktop setup:
 ```bash
 cd ~/hyprland-rice
 ./uninstall.sh
 ```
-If an installation backup exists, `uninstall.sh` will prompt to automatically restore your previous dotfiles.
+If an installation backup exists, `uninstall.sh` will prompt to automatically restore your original dotfiles.
 
 ---
 

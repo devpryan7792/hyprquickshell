@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Hyprland Rice — Complete Automated Installer
-# Native Hyprland Lua + Pure Quickshell DE + Dynamic Matugen Material You
+# Hyprland Material You Rice — Complete Turnkey Installer
+# Native Hyprland Lua + Pure Quickshell DE + Dynamic Matugen Palette
 # =============================================================================
 
 set -e
@@ -44,7 +44,8 @@ BANNER
 
 # ── Arguments & Flags ────────────────────────────────────────────────────────
 AUTO_CONFIRM=false
-USE_SYMLINK=false
+USE_SYMLINK=""
+SKIP_PACKAGES=false
 
 for arg in "$@"; do
     case "$arg" in
@@ -54,12 +55,22 @@ for arg in "$@"; do
         -s|--symlink)
             USE_SYMLINK=true
             ;;
+        -c|--copy)
+            USE_SYMLINK=false
+            ;;
+        --no-pkg|--skip-packages)
+            SKIP_PACKAGES=true
+            ;;
         -h|--help)
+            echo "Hyprland Rice Installer"
             echo "Usage: ./install.sh [OPTIONS]"
+            echo ""
             echo "Options:"
-            echo "  -y, --yes      Automatic yes to prompts (unattended mode)"
-            echo "  -s, --symlink  Symlink configs instead of copying (great for development)"
-            echo "  -h, --help     Show this help message"
+            echo "  -y, --yes            Automatic yes to prompts (unattended mode)"
+            echo "  -s, --symlink        Symlink configs directly to repository (best for tweaking)"
+            echo "  -c, --copy           Copy configs to ~/.config (standalone copy)"
+            echo "      --no-pkg         Skip package installation and only deploy configs"
+            echo "  -h, --help           Show this help message"
             exit 0
             ;;
     esac
@@ -79,14 +90,14 @@ prompt_confirm() {
     [[ "$response" =~ ^[Yy]$ ]]
 }
 
-# ── Pre-flight Checks ────────────────────────────────────────────────────────
+# ── Pre-flight Checks & Hardware Detection ────────────────────────────────────
 check_system() {
-    log_step "Checking System Environment"
-    
+    log_step "Checking System Environment & Hardware"
+
     if [ ! -f /etc/arch-release ]; then
-        log_warn "This installer is tailored for Arch Linux and Arch-based systems."
-        log_warn "You can still proceed with configuration deployment, but package installation may need to be done manually."
-        if ! prompt_confirm "Do you wish to continue?" "Y"; then
+        log_warn "This installer is optimized for Arch Linux and Arch-based distributions (EndeavourOS, Manjaro, etc.)."
+        log_warn "You can still deploy dotfiles, but packages may require manual installation."
+        if ! prompt_confirm "Do you wish to proceed anyway?" "Y"; then
             log_info "Installation aborted."
             exit 0
         fi
@@ -96,8 +107,19 @@ check_system() {
         IS_ARCH=true
     fi
 
-    # Check for AUR helper if Arch
-    if [ "$IS_ARCH" = true ]; then
+    # Hardware & GPU detection
+    if lspci 2>/dev/null | grep -iE "vga|3d" | grep -qi "nvidia"; then
+        log_info "Nvidia GPU detected. Ensure 'nvidia-dkms' or appropriate proprietary drivers are installed."
+        log_info "Hyprland Nvidia environment flags will be handled smoothly."
+    fi
+
+    # Battery & Brightness check
+    if [ -d /sys/class/power_supply ] && ls /sys/class/power_supply/BAT* >/dev/null 2>&1; then
+        log_ok "Laptop battery detected. Brightness and power monitoring will be enabled."
+    fi
+
+    # Detect AUR helper if Arch
+    if [ "$IS_ARCH" = true ] && [ "$SKIP_PACKAGES" = false ]; then
         if command -v yay >/dev/null 2>&1; then
             AUR_HELPER="yay"
             log_ok "Found AUR helper: yay"
@@ -118,7 +140,7 @@ check_system() {
                 log_ok "yay installed successfully!"
             else
                 AUR_HELPER=""
-                log_warn "Proceeding without an AUR helper. AUR packages must be installed manually."
+                log_warn "Proceeding without an AUR helper."
             fi
         fi
     fi
@@ -126,22 +148,36 @@ check_system() {
 
 # ── Package Installation ─────────────────────────────────────────────────────
 install_packages() {
-    log_step "Installing Dependencies"
+    [ "$SKIP_PACKAGES" = true ] && return 0
+    [ "$IS_ARCH" = false ] && return 0
 
+    log_step "Installing System Packages & Core Dependencies"
+
+    # Official Arch Repositories (pacman)
     local PACMAN_PKGS=(
+        # Wayland Compositor & Core Utilities
         hyprland
+        hypridle
+        hyprlock
         hyprsunset
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-gtk
         wl-clipboard
         cliphist
         grim
         slurp
+        wf-recorder
         jq
         brightnessctl
         playerctl
+
+        # Audio Stack
         pipewire
         wireplumber
-        wf-recorder
-        thunar
+        pipewire-pulse
+        pipewire-alsa
+
+        # Shell & Terminal Tools
         ghostty
         zsh
         starship
@@ -151,34 +187,52 @@ install_packages() {
         fzf
         zoxide
         python
+        python-gobject
+        ffmpeg
+
+        # Fonts & Icons
         ttf-jetbrains-mono-nerd
+        noto-fonts-emoji
+
+        # Graphical Apps & Thumbnails
+        thunar
+        tumbler
+        ffmpegthumbnailer
+
+        # Quickshell & Dynamic Theming (Available in extra!)
+        quickshell
+        matugen
+        awww
+
+        # Qt6 Libraries
         qt6-base
         qt6-declarative
         qt6-svg
+        qt6-wayland
+        qt6-5compat
         qt6ct
     )
 
+    # Fallback AUR packages if bleeding-edge or git builds are desired
     local AUR_PKGS=(
         quickshell-git
-        matugen-bin
-        awww
     )
 
-    if [ "$IS_ARCH" = true ]; then
-        if prompt_confirm "Install required system and AUR packages?" "Y"; then
-            log_info "Installing official repository packages via pacman..."
-            sudo pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
+    if prompt_confirm "Install required packages via pacman?" "Y"; then
+        log_info "Synchronizing databases and installing official packages..."
+        sudo pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}" || {
+            log_warn "Some pacman packages may not have resolved cleanly. Attempting fallback..."
+        }
 
-            if [ -n "$AUR_HELPER" ]; then
-                log_info "Installing AUR packages via $AUR_HELPER..."
-                $AUR_HELPER -S --needed --noconfirm "${AUR_PKGS[@]}"
-            else
-                log_warn "Please manually install the following AUR packages: ${AUR_PKGS[*]}"
-            fi
-            log_ok "Packages installed successfully."
-        else
-            log_info "Skipping package installation."
+        # If quickshell wasn't installed via pacman, fallback to AUR
+        if ! command -v quickshell >/dev/null 2>&1 && [ -n "$AUR_HELPER" ]; then
+            log_info "Installing quickshell-git via $AUR_HELPER..."
+            $AUR_HELPER -S --needed --noconfirm "${AUR_PKGS[@]}" || true
         fi
+
+        log_ok "System packages verified."
+    else
+        log_info "Skipping package installation."
     fi
 }
 
@@ -200,6 +254,7 @@ backup_existing() {
         "$HOME/.config/ghostty"
         "$HOME/.config/fastfetch"
         "$HOME/.config/starship.toml"
+        "$HOME/.config/nvim"
         "$HOME/.zshrc"
         "$HOME/.bashrc"
     )
@@ -214,63 +269,86 @@ backup_existing() {
 
     if [ "$HAS_BACKUPS" = true ]; then
         echo "$BACKUP_DIR" > "$HOME/.config/hyprland-rice-last-backup"
-        log_ok "Backup completed at: $BACKUP_DIR"
+        log_ok "Backup created safely at: $BACKUP_DIR"
     else
         rm -rf "$BACKUP_DIR"
-        log_info "No existing configurations needed backup."
+        log_info "No conflicting configurations needed backup."
     fi
 }
 
-# ── Deploy Configurations ────────────────────────────────────────────────────
+# ── Configuration Deployment ─────────────────────────────────────────────────
 deploy_configs() {
     log_step "Deploying Rice Configurations"
+
+    # Determine deploy mode if not specified via flag
+    if [ -z "$USE_SYMLINK" ]; then
+        if [ "$AUTO_CONFIRM" = true ]; then
+            USE_SYMLINK=false
+        else
+            echo -e "${BOLD}Choose deployment method:${NC}"
+            echo -e "  [1] ${CYAN}Symlink${NC} — Live links to this repository (Recommended for developers/rice tweakers)"
+            echo -e "  [2] ${GREEN}Copy${NC}    — Standalone copy of files to ~/.config"
+            read -rp "Enter choice [1/2] (default: 1): " choice
+            if [ "$choice" = "2" ]; then
+                USE_SYMLINK=false
+            else
+                USE_SYMLINK=true
+            fi
+        fi
+    fi
 
     mkdir -p "$HOME/.config"
     mkdir -p "$HOME/Pictures/wallpaper"
     mkdir -p "$HOME/Pictures/shots"
     mkdir -p "$HOME/Videos/recordings"
+    mkdir -p "$HOME/.cache"
+    mkdir -p "$HOME/.local/bin"
 
-    local DEPLOY_ITEMS=(
+    local DEPLOY_CONFIGS=(
         "hypr"
         "quickshell"
         "matugen"
         "ghostty"
         "fastfetch"
         "starship.toml"
+        "nvim"
     )
 
-    for item in "${DEPLOY_ITEMS[@]}"; do
+    for item in "${DEPLOY_CONFIGS[@]}"; do
         local src="$CONFIG_DIR/$item"
         local dest="$HOME/.config/$item"
+
+        [ ! -e "$src" ] && continue
 
         if [ -e "$dest" ] || [ -L "$dest" ]; then
             rm -rf "$dest"
         fi
 
         if [ "$USE_SYMLINK" = true ]; then
-            log_info "Symlinking $item -> $dest"
-            ln -s "$src" "$dest"
+            log_info "Symlinking ~/.config/$item -> $src"
+            ln -sf "$src" "$dest"
         else
-            log_info "Copying $item -> $dest"
+            log_info "Copying ~/.config/$item"
             cp -r "$src" "$dest"
         fi
     done
 
-    # Ensure executable permissions on all hypr scripts
+    # Ensure executable permissions on all hyprland scripts
+    chmod +x "$CONFIG_DIR/hypr/scripts/"* 2>/dev/null || true
     chmod +x "$HOME/.config/hypr/scripts/"* 2>/dev/null || true
 
-    # Fix Ghostty theme path to user's home directory
-    if [ -f "$HOME/.config/ghostty/config" ]; then
+    # Fix Ghostty theme path if copied
+    if [ "$USE_SYMLINK" = false ] && [ -f "$HOME/.config/ghostty/config" ]; then
         sed -i "s|~/.config/ghostty/theme|$HOME/.config/ghostty/theme|g" "$HOME/.config/ghostty/config"
-        sed -i "s|/home/[^/]*/.config/ghostty/theme|$HOME/.config/ghostty/theme|g" "$HOME/.config/ghostty/config"
     fi
 
-    # Deploy Wallpapers
-    log_info "Deploying curated aesthetic wallpapers to ~/Pictures/wallpaper/..."
+    # Deploy Aesthetic Wallpapers
+    log_info "Deploying curated wallpapers to ~/Pictures/wallpaper/..."
     cp -n "$ASSETS_DIR/wallpapers/"* "$HOME/Pictures/wallpaper/" 2>/dev/null || true
 
     # Deploy Shell Configs
     if [ -f "$HOME_DIR/.zshrc" ]; then
+        rm -f "$HOME/.zshrc"
         if [ "$USE_SYMLINK" = true ]; then
             ln -sf "$HOME_DIR/.zshrc" "$HOME/.zshrc"
         else
@@ -289,7 +367,7 @@ deploy_configs() {
 
 # ── Setup Zsh Plugins ────────────────────────────────────────────────────────
 setup_zsh_plugins() {
-    log_step "Setting up Zsh Plugins"
+    log_step "Configuring Zsh Plugins"
 
     local PLUGIN_DIR="$HOME/.zsh/plugins"
     mkdir -p "$PLUGIN_DIR"
@@ -305,57 +383,70 @@ setup_zsh_plugins() {
         local target="$PLUGIN_DIR/$name"
         if [ ! -d "$target" ]; then
             log_info "Cloning $name..."
-            git clone --depth 1 "${PLUGINS[$name]}" "$target" 2>/dev/null || log_warn "Failed to clone $name"
+            git clone --depth 1 "${PLUGINS[$name]}" "$target" 2>/dev/null || log_warn "Could not clone $name"
         else
             log_ok "$name already installed."
         fi
     done
+
+    # Check default shell
+    if [ "$SHELL" != "$(command -v zsh 2>/dev/null)" ] && command -v zsh >/dev/null 2>&1; then
+        if prompt_confirm "Set zsh as your default login shell?" "Y"; then
+            chsh -s "$(command -v zsh)" 2>/dev/null || log_warn "Run 'chsh -s $(command -v zsh)' manually."
+            log_ok "Default shell set to zsh."
+        fi
+    fi
 }
 
 # ── Initialize Palette & Theming ─────────────────────────────────────────────
 init_theme() {
-    log_step "Initializing Dynamic Material You Palette"
+    log_step "Initializing Dynamic Material You Theming"
 
-    local DEFAULT_WALL="$HOME/Pictures/wallpaper/japan-artistic.jpg"
-    [ ! -f "$DEFAULT_WALL" ] && DEFAULT_WALL=$(find "$HOME/Pictures/wallpaper" -type f \( -iname "*.jpg" -o -iname "*.png" \) | head -n 1)
+    local DEFAULT_WALL="$HOME/Pictures/wallpaper/qz7pz7.png"
+    [ ! -f "$DEFAULT_WALL" ] && DEFAULT_WALL="$HOME/Pictures/wallpaper/japan-artistic.jpg"
+    [ ! -f "$DEFAULT_WALL" ] && DEFAULT_WALL=$(find "$HOME/Pictures/wallpaper" -type f \( -iname "*.jpg" -o -iname "*.png" \) 2>/dev/null | head -n 1)
 
     mkdir -p "$HOME/.cache"
-    echo "$DEFAULT_WALL" > "$HOME/.cache/hyprdots-wallpaper"
+    [ -n "$DEFAULT_WALL" ] && echo "$DEFAULT_WALL" > "$HOME/.cache/hyprdots-wallpaper"
     echo "scheme-tonal-spot" > "$HOME/.cache/hyprdots-theme-scheme"
 
     local MATUGEN_BIN
     MATUGEN_BIN="$(command -v matugen 2>/dev/null || echo "$HOME/.local/bin/matugen")"
 
     if [ -x "$MATUGEN_BIN" ] && [ -n "$DEFAULT_WALL" ]; then
-        log_info "Running initial Matugen palette extraction on $(basename "$DEFAULT_WALL")..."
+        log_info "Generating initial tonal palette with Matugen from $(basename "$DEFAULT_WALL")..."
         "$MATUGEN_BIN" image "$DEFAULT_WALL" --type scheme-tonal-spot --source-color-index 0 -c "$HOME/.config/matugen/config.toml" 2>/dev/null || true
-        log_ok "Dynamic colors generated for Hyprland, Quickshell, and Ghostty."
+        log_ok "Dynamic colors synchronized across Hyprland, Quickshell, and Ghostty."
     else
-        log_warn "Matugen binary not found in PATH or ~/.local/bin. Dynamic palette can be generated once installed."
+        log_warn "Matugen palette extraction will run automatically once Hyprland starts."
     fi
 }
 
 # ── Summary & Instructions ───────────────────────────────────────────────────
 print_summary() {
     echo -e "\n${GREEN}${BOLD}🎉 Installation Complete!${NC}\n"
-    echo -e "${CYAN}${BOLD}── Keybinding Cheat Sheet ───────────────────────────────────${NC}"
+    echo -e "${CYAN}${BOLD}── Essential Keybindings Cheat Sheet ────────────────────────${NC}"
     echo -e "  ${BOLD}SUPER + SPACE${NC}      Spotlight Application Launcher (Quickshell)"
-    echo -e "  ${BOLD}SUPER + N${NC}          Control Center / Notification Dashboard"
+    echo -e "  ${BOLD}SUPER + N${NC}          Control Center Dashboard & Notification Panel"
     echo -e "  ${BOLD}SUPER + W${NC}          Wallpaper Picker & Dynamic Theme Switcher"
+    echo -e "  ${BOLD}ALT + T${NC}            Curated Theme Preset Studio"
+    echo -e "  ${BOLD}SUPER + /${NC}          Keybindings Cheatsheet Modal"
     echo -e "  ${BOLD}SUPER + V${NC}          Clipboard History Manager (cliphist)"
+    echo -e "  ${BOLD}SUPER + \`${NC} / ${BOLD}SUPER + U${NC} Seamless Scratchpad Floating Terminal"
     echo -e "  ${BOLD}SUPER + Q${NC}          Ghostty Terminal"
     echo -e "  ${BOLD}SUPER + E${NC}          Thunar File Manager"
-    echo -e "  ${BOLD}SUPER + B${NC}          Browser (Firefox / Brave)"
+    echo -e "  ${BOLD}SUPER + B${NC}          Web Browser"
     echo -e "  ${BOLD}SUPER + F4${NC}         Close Active Window"
     echo -e "  ${BOLD}SUPER + T${NC}          Toggle Window Floating"
     echo -e "  ${BOLD}SUPER + F${NC}          Toggle Fullscreen"
-    echo -e "  ${BOLD}SUPER + ALT + N${NC}    Toggle Blue Light / Night Light Filter"
+    echo -e "  ${BOLD}SUPER + ALT + N${NC}    Toggle Blue Light Filter (hyprsunset)"
     echo -e "  ${BOLD}Print${NC}              Interactive Region Screenshot (grim + slurp)"
-    echo -e "  ${BOLD}SUPER + SHIFT + R${NC}  Interactive Screen Recording (wf-recorder)"
+    echo -e "  ${BOLD}SUPER + SHIFT + R${NC}  Region Screen Recording (wf-recorder)"
+    echo -e "  ${BOLD}SUPER + X${NC}          Power & Session Menu"
     echo -e "  ${BOLD}SUPER + M${NC}          Exit Hyprland"
     echo -e "${CYAN}─────────────────────────────────────────────────────────────${NC}"
-    echo -e "\n${BOLD}To start your session:${NC}"
-    echo -e "  Log in via your display manager (SDDM) selecting ${BOLD}Hyprland${NC}, or run ${BOLD}Hyprland${NC} / ${BOLD}start-hyprland${NC}.\n"
+    echo -e "\n${BOLD}Ready to go!${NC}"
+    echo -e "Log in via SDDM selecting ${BOLD}Hyprland${NC}, or run ${BOLD}Hyprland${NC} / ${BOLD}start-hyprland${NC}.\n"
 }
 
 # ── Main ─────────────────────────────────────────────────────────────────────
